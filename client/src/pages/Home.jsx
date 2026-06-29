@@ -13,10 +13,14 @@ export default function Home() {
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
   const [loading, setLoading] = useState(false);
   const [timerMinutes, setTimerMinutes] = useState(30);
+  const [timerEnabled, setTimerEnabled] = useState(true);
 
   useEffect(() => {
     assessmentAPI.getConfig()
-      .then(res => setTimerMinutes(res.data.timerMinutes))
+      .then(res => {
+        setTimerMinutes(res.data.timerMinutes);
+        setTimerEnabled(res.data.timerEnabled !== false);
+      })
       .catch(() => {});
 
     const socket = io(SOCKET_URL, { transports: ["websocket", "polling"] });
@@ -35,7 +39,7 @@ export default function Home() {
     try {
       const res = await assessmentAPI.startSession(form);
       const { sessionId } = res.data;
-      sessionStorage.setItem("assessmentSession", JSON.stringify({ sessionId, candidate: form, timerMinutes }));
+      sessionStorage.setItem("assessmentSession", JSON.stringify({ sessionId, candidate: form, timerMinutes, timerEnabled }));
       navigate("/assessment");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to start. Please try again.");

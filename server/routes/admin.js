@@ -127,28 +127,34 @@ router.get("/settings", protect, async (req, res) => {
   try {
     let settings = await Settings.findOne({ key: "global" });
     if (!settings) settings = await Settings.create({ key: "global" });
-    res.json({ timerMinutes: settings.timerMinutes });
+    res.json({ timerMinutes: settings.timerMinutes, timerEnabled: settings.timerEnabled !== false });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 });
 
 // PUT /api/admin/settings
-router.put("/settings", protect, [
-  body("timerMinutes").isInt({ min: 1, max: 180 }).withMessage("Timer must be between 1 and 180 minutes")
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+router.put("/settings", protect, async (req, res) => {
   try {
+    const update = {};
+    if (req.body.timerMinutes !== undefined) {
+      const val = parseInt(req.body.timerMinutes);
+      if (!val || val < 1 || val > 180) return res.status(400).json({ message: "Timer must be between 1 and 180 minutes" });
+      update.timerMinutes = val;
+    }
+    if (req.body.timerEnabled !== undefined) {
+      update.timerEnabled = Boolean(req.body.timerEnabled);
+    }
+    if (Object.keys(update).length === 0) return res.status(400).json({ message: "No valid fields to update" });
+
     const settings = await Settings.findOneAndUpdate(
       { key: "global" },
-      { timerMinutes: parseInt(req.body.timerMinutes) },
+      update,
       { upsert: true, new: true }
     );
-    // Broadcast to ALL connected clients (candidates + admins)
     const io = req.app.get("io");
-    if (io) io.emit("timer-updated", { timerMinutes: settings.timerMinutes });
-    res.json({ timerMinutes: settings.timerMinutes });
+    if (io) io.emit("timer-updated", { timerMinutes: settings.timerMinutes, timerEnabled: settings.timerEnabled !== false });
+    res.json({ timerMinutes: settings.timerMinutes, timerEnabled: settings.timerEnabled !== false });
   } catch (error) {
     console.error("Settings update error:", error);
     res.status(500).json({ message: "Server error", detail: error.message });

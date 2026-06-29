@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { assessmentAPI } from "../services/api";
 import Timer from "../components/assessment/Timer";
 import toast from "react-hot-toast";
-import { ChevronLeft, ChevronRight, CheckCircle2, Circle } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Circle, Clock } from "lucide-react";
 import RedBeanLogo from "../components/common/RedBeanLogo";
 
 const SECTION_LABELS = { A: "Logical & IQ", B: "Decision Making", C: "Integrity", D: "Stress & Work Style" };
@@ -19,6 +19,7 @@ export default function Assessment() {
 
   const session = JSON.parse(sessionStorage.getItem("assessmentSession") || "{}");
   const timerMinutes = session.timerMinutes || 30;
+  const timerEnabled = session.timerEnabled !== false;
 
   useEffect(() => {
     if (!session.sessionId) { navigate("/"); return; }
@@ -89,7 +90,13 @@ export default function Assessment() {
               <div className="font-semibold text-gray-800">{session.candidate?.name}</div>
             </div>
           </div>
-          <Timer duration={timerMinutes * 60} onExpire={() => { toast.error("Time's up! Submitting..."); submitAssessment(); }} />
+          {timerEnabled ? (
+            <Timer duration={timerMinutes * 60} onExpire={() => { toast.error("Time's up! Submitting..."); submitAssessment(); }} />
+          ) : (
+            <div className="flex items-center gap-1.5 text-sm text-gray-400 bg-gray-100 px-3 py-1.5 rounded-full">
+              <Clock size={14} /> No time limit
+            </div>
+          )}
           <div className="text-right">
             <div className="text-sm text-gray-500">Answered</div>
             <div className="font-semibold text-gray-800">{answered}/{questions.length}</div>

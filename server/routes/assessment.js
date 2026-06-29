@@ -21,9 +21,9 @@ router.get("/config", async (req, res) => {
   try {
     let settings = await Settings.findOne({ key: "global" });
     if (!settings) settings = await Settings.create({ key: "global" });
-    res.json({ timerMinutes: settings.timerMinutes });
+    res.json({ timerMinutes: settings.timerMinutes, timerEnabled: settings.timerEnabled !== false });
   } catch {
-    res.json({ timerMinutes: 30 });
+    res.json({ timerMinutes: 30, timerEnabled: true });
   }
 });
 

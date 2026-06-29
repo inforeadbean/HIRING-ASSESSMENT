@@ -31,7 +31,9 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [timerMinutes, setTimerMinutes] = useState(30);
   const [timerInput, setTimerInput] = useState(30);
+  const [timerEnabled, setTimerEnabled] = useState(true);
   const [savingTimer, setSavingTimer] = useState(false);
+  const [togglingTimer, setTogglingTimer] = useState(false);
   const [newCount, setNewCount] = useState(0);
 
   const fetchStats = useCallback(async () => {
@@ -58,6 +60,7 @@ export default function AdminDashboard() {
     adminAPI.getSettings().then(res => {
       setTimerMinutes(res.data.timerMinutes);
       setTimerInput(res.data.timerMinutes);
+      setTimerEnabled(res.data.timerEnabled !== false);
     }).catch(() => {});
   }, []);
 
@@ -81,6 +84,7 @@ export default function AdminDashboard() {
     (data) => {
       setTimerMinutes(data.timerMinutes);
       setTimerInput(data.timerMinutes);
+      if (data.timerEnabled !== undefined) setTimerEnabled(data.timerEnabled !== false);
     }
   );
 
@@ -96,6 +100,17 @@ export default function AdminDashboard() {
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to update timer");
     } finally { setSavingTimer(false); }
+  };
+
+  const handleToggleTimer = async () => {
+    setTogglingTimer(true);
+    try {
+      const res = await adminAPI.updateSettings({ timerEnabled: !timerEnabled });
+      setTimerEnabled(res.data.timerEnabled !== false);
+      toast.success(`Timer ${res.data.timerEnabled ? "enabled" : "disabled"}`);
+    } catch {
+      toast.error("Failed to update timer");
+    } finally { setTogglingTimer(false); }
   };
 
   const handleDelete = async (id, name) => {
@@ -174,23 +189,42 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-2 text-gray-700 font-semibold text-sm">
             <Settings size={16} className="text-brand-700" /> Assessment Timer
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <input
-              type="number" min={1} max={180}
-              value={timerInput}
-              onChange={e => setTimerInput(e.target.value)}
-              className="input-field w-20 py-1.5 text-center font-bold text-sm"
-            />
-            <span className="text-gray-500 text-sm">minutes</span>
-            <button
-              onClick={handleSaveTimer}
-              disabled={savingTimer}
-              className="btn-primary py-1.5 px-4 text-sm"
-            >
-              {savingTimer ? "Saving..." : "Save"}
-            </button>
-            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">Current: {timerMinutes} min</span>
-          </div>
+
+          {/* Toggle */}
+          <button
+            onClick={handleToggleTimer}
+            disabled={togglingTimer}
+            className="flex items-center gap-2 focus:outline-none"
+            title={timerEnabled ? "Click to disable timer" : "Click to enable timer"}
+          >
+            <span className={`relative inline-flex w-11 h-6 rounded-full transition-colors duration-200 ${timerEnabled ? "bg-green-500" : "bg-gray-300"}`}>
+              <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${timerEnabled ? "translate-x-6" : "translate-x-1"}`} />
+            </span>
+            <span className={`text-sm font-semibold ${timerEnabled ? "text-green-600" : "text-gray-400"}`}>
+              {timerEnabled ? "Timer ON" : "Timer OFF"}
+            </span>
+          </button>
+
+          {/* Minutes input — only when timer is enabled */}
+          {timerEnabled && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <input
+                type="number" min={1} max={180}
+                value={timerInput}
+                onChange={e => setTimerInput(e.target.value)}
+                className="input-field w-20 py-1.5 text-center font-bold text-sm"
+              />
+              <span className="text-gray-500 text-sm">minutes</span>
+              <button
+                onClick={handleSaveTimer}
+                disabled={savingTimer}
+                className="btn-primary py-1.5 px-4 text-sm"
+              >
+                {savingTimer ? "Saving..." : "Save"}
+              </button>
+              <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">Current: {timerMinutes} min</span>
+            </div>
+          )}
         </div>
 
         {/* Filters */}
