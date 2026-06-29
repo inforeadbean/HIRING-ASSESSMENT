@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const answerSchema = new mongoose.Schema({
-  questionId: { type: Number, required: true },
+  questionId: { type: mongoose.Schema.Types.Mixed, required: true },
   section: String,
   sectionCode: String,
   question: String,
@@ -15,7 +15,7 @@ const submissionSchema = new mongoose.Schema({
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, trim: true, lowercase: true },
     phone: { type: String, required: true, trim: true },
-    position: { type: String, required: true, trim: true },
+    position: { type: String, default: "", trim: true },
     experience: String
   },
   answers: [answerSchema],

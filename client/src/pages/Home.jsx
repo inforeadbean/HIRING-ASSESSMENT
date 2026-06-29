@@ -5,39 +5,30 @@ import toast from "react-hot-toast";
 import { ClipboardList, Clock, CheckCircle } from "lucide-react";
 import RedBeanLogo from "../components/common/RedBeanLogo";
 import { io } from "socket.io-client";
-import { POSITIONS, EXPERIENCE_LEVELS } from "../constants/positions";
 
 const SOCKET_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace("/api", "");
 
 export default function Home() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", phone: "", position: "", experience: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "" });
   const [loading, setLoading] = useState(false);
   const [timerMinutes, setTimerMinutes] = useState(30);
-  const [dbPositions, setDbPositions] = useState(null); // null = loading, [] = empty
 
   useEffect(() => {
     assessmentAPI.getConfig()
       .then(res => setTimerMinutes(res.data.timerMinutes))
       .catch(() => {});
 
-    assessmentAPI.getPositions()
-      .then(res => setDbPositions(res.data.positions))
-      .catch(() => setDbPositions([]));
-
     const socket = io(SOCKET_URL, { transports: ["websocket", "polling"] });
     socket.on("timer-updated", (data) => setTimerMinutes(data.timerMinutes));
     return () => socket.disconnect();
   }, []);
 
-  // Use DB positions when available, fall back to static list
-  const positionOptions = dbPositions && dbPositions.length > 0 ? dbPositions : POSITIONS;
-
   const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
   const handleStart = async (e) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.email || !form.phone.trim() || !form.position || !form.experience) {
+    if (!form.name.trim() || !form.email || !form.phone.trim()) {
       return toast.error("Please fill all fields");
     }
     setLoading(true);
@@ -97,25 +88,9 @@ export default function Home() {
                 <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="you@email.com" className="input-field" required />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
-                <input name="phone" value={form.phone} onChange={handleChange} placeholder="+91 XXXXX XXXXX" className="input-field" required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Position Applied For *</label>
-                <select name="position" value={form.position} onChange={handleChange} className="input-field" required>
-                  <option value="">Select position</option>
-                  {positionOptions.map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
-              </div>
-            </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Years of Experience *</label>
-              <select name="experience" value={form.experience} onChange={handleChange} className="input-field" required>
-                <option value="">Select experience level</option>
-                {EXPERIENCE_LEVELS.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
-              </select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+              <input name="phone" value={form.phone} onChange={handleChange} placeholder="+91 XXXXX XXXXX" className="input-field" required />
             </div>
 
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">

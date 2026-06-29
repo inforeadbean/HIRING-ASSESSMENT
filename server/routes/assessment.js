@@ -68,8 +68,7 @@ router.get("/questions", async (req, res) => {
 router.post("/start", [
   body("name").trim().notEmpty(),
   body("email").isEmail(),
-  body("phone").trim().notEmpty(),
-  body("position").trim().notEmpty()
+  body("phone").trim().notEmpty()
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });

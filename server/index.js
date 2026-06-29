@@ -62,5 +62,8 @@ const seedAdmin = async () => {
 };
 seedAdmin().catch(console.error);
 
+const { seedQuestionsIfEmpty } = require("./seed/seedQuestions");
+seedQuestionsIfEmpty().catch(console.error);
+
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
