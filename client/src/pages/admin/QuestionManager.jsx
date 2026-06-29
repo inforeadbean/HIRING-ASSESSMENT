@@ -18,7 +18,12 @@ const EMPTY_FORM = {
   isActive: true
 };
 
-const SECTION_COLOR = { A: "bg-purple-100 text-purple-700", B: "bg-blue-100 text-blue-700", C: "bg-green-100 text-green-700", D: "bg-orange-100 text-orange-700" };
+const SECTION_COLOR = {
+  A: "bg-purple-100 text-purple-700",
+  B: "bg-blue-100 text-blue-700",
+  C: "bg-green-100 text-green-700",
+  D: "bg-orange-100 text-orange-700"
+};
 
 export default function QuestionManager() {
   const navigate = useNavigate();
@@ -28,11 +33,19 @@ export default function QuestionManager() {
   const [filterPosition, setFilterPosition] = useState("all");
   const [filterExperience, setFilterExperience] = useState("all");
   const [filterSection, setFilterSection] = useState("");
+  const [dbPositions, setDbPositions] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
+
+  const fetchPositions = useCallback(async () => {
+    try {
+      const res = await questionsAPI.getPositions();
+      setDbPositions(res.data.positions || []);
+    } catch { /* ignore */ }
+  }, []);
 
   const fetchQuestions = useCallback(async () => {
     setLoading(true);
@@ -50,13 +63,10 @@ export default function QuestionManager() {
     }
   }, [filterPosition, filterExperience, filterSection]);
 
+  useEffect(() => { fetchPositions(); }, [fetchPositions]);
   useEffect(() => { fetchQuestions(); }, [fetchQuestions]);
 
-  const openAdd = () => {
-    setForm(EMPTY_FORM);
-    setEditingId(null);
-    setShowForm(true);
-  };
+  const openAdd = () => { setForm(EMPTY_FORM); setEditingId(null); setShowForm(true); };
 
   const openEdit = (q) => {
     setForm({
@@ -77,38 +87,39 @@ export default function QuestionManager() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (form.options.some(o => !o.trim())) return toast.error("All 4 options must be filled");
     if (!form.question.trim()) return toast.error("Question text is required");
-    if (!form.targetPositions.length || form.targetPositions.every(p => !p.trim())) return toast.error("Enter a position name or select All Positions");
+    if (form.options.some(o => !o.trim())) return toast.error("All 4 options must be filled");
+    const positions = form.targetPositions.filter(p => p && p.trim());
+    if (!positions.length) return toast.error("Enter a position name or select All Positions");
     if (!form.experienceLevels.length) return toast.error("Select at least one experience level");
     setSaving(true);
     try {
+      const payload = { ...form, targetPositions: positions };
       if (editingId) {
-        await questionsAPI.update(editingId, form);
+        await questionsAPI.update(editingId, payload);
         toast.success("Question updated");
       } else {
-        await questionsAPI.create(form);
+        await questionsAPI.create(payload);
         toast.success("Question added");
       }
       closeForm();
+      fetchPositions();
       fetchQuestions();
     } catch (err) {
-      const errMsg = err.response?.data?.errors?.[0]?.msg || err.response?.data?.message || "Save failed";
-      toast.error(errMsg);
+      toast.error(err.response?.data?.message || "Save failed");
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id, text) => {
-    if (!window.confirm(`Delete: "${text.slice(0, 60)}..."?`)) return;
+    if (!window.confirm(`Delete this question?`)) return;
     try {
       await questionsAPI.remove(id);
-      toast.success("Question deleted");
+      toast.success("Deleted");
+      fetchPositions();
       fetchQuestions();
-    } catch {
-      toast.error("Delete failed");
-    }
+    } catch { toast.error("Delete failed"); }
   };
 
   const toggleExperience = (exp) => {
@@ -117,7 +128,7 @@ export default function QuestionManager() {
       if (exp === "all") return { ...f, experienceLevels: ["all"] };
       const without = current.filter(e => e !== "all");
       return without.includes(exp)
-        ? { ...f, experienceLevels: without.filter(e => e !== exp) || ["all"] }
+        ? { ...f, experienceLevels: without.length === 1 ? ["all"] : without.filter(e => e !== exp) }
         : { ...f, experienceLevels: [...without, exp] };
     });
   };
@@ -143,10 +154,7 @@ export default function QuestionManager() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate("/admin/dashboard")}
-              className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-brand-700 px-3 py-1.5 rounded-lg hover:bg-brand-50 transition"
-            >
+            <button onClick={() => navigate("/admin/dashboard")} className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-brand-700 px-3 py-1.5 rounded-lg hover:bg-brand-50 transition">
               <ArrowLeft size={15} /> Dashboard
             </button>
             <button onClick={openAdd} className="btn-primary flex items-center gap-1.5 py-1.5 px-4 text-sm">
@@ -165,7 +173,7 @@ export default function QuestionManager() {
             </div>
             <select value={filterPosition} onChange={e => setFilterPosition(e.target.value)} className="input-field py-1.5 text-sm w-52">
               <option value="all">All Positions</option>
-              {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
+              {dbPositions.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
             <select value={filterExperience} onChange={e => setFilterExperience(e.target.value)} className="input-field py-1.5 text-sm w-44">
               <option value="all">All Experience</option>
@@ -177,22 +185,22 @@ export default function QuestionManager() {
             </select>
             {(filterPosition !== "all" || filterExperience !== "all" || filterSection) && (
               <button onClick={() => { setFilterPosition("all"); setFilterExperience("all"); setFilterSection(""); }} className="text-xs text-brand-700 hover:underline flex items-center gap-1">
-                <X size={12} /> Clear filters
+                <X size={12} /> Clear
               </button>
             )}
             <span className="ml-auto text-sm text-gray-500 font-medium">{questions.length} question{questions.length !== 1 ? "s" : ""}</span>
           </div>
         </div>
 
-        {/* Info callout when no questions */}
+        {/* Empty state */}
         {!loading && questions.length === 0 && (
           <div className="card text-center py-16">
             <div className="text-5xl mb-4">📝</div>
             <h3 className="text-lg font-semibold text-gray-700 mb-2">No questions found</h3>
             <p className="text-gray-400 text-sm mb-5">
               {filterPosition !== "all" || filterExperience !== "all"
-                ? "No questions match the current filters. Try changing the filters or add new questions."
-                : "Start by adding questions. You can target specific job positions and experience levels."}
+                ? "No questions match the current filters."
+                : "Start by clicking Add Question."}
             </p>
             <button onClick={openAdd} className="btn-primary mx-auto flex items-center gap-2 w-fit">
               <Plus size={16} /> Add First Question
@@ -206,15 +214,13 @@ export default function QuestionManager() {
           </div>
         )}
 
-        {/* Questions grouped by section */}
+        {/* Questions by section */}
         {!loading && questions.length > 0 && (
           <div className="space-y-4">
             {groupedBySection.map(group => (
               <div key={group.code} className="card p-0 overflow-hidden">
-                <div className={`px-5 py-3 border-b border-gray-100 flex items-center gap-3 bg-gray-50/60`}>
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${SECTION_COLOR[group.code]}`}>
-                    Section {group.code}
-                  </span>
+                <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-3 bg-gray-50/60">
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${SECTION_COLOR[group.code]}`}>Section {group.code}</span>
                   <span className="font-semibold text-gray-800 text-sm">{group.label}</span>
                   <span className="ml-auto text-xs text-gray-400">{group.items.length} question{group.items.length !== 1 ? "s" : ""}</span>
                 </div>
@@ -225,7 +231,6 @@ export default function QuestionManager() {
                         <span className="text-xs font-bold text-gray-400 mt-0.5 w-5 shrink-0">{idx + 1}.</span>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-800 leading-snug">{q.question}</p>
-                          {/* Tags */}
                           <div className="flex gap-1.5 mt-1.5 flex-wrap">
                             {q.targetPositions.map(p => (
                               <span key={p} className="text-[10px] bg-brand-50 text-brand-700 px-1.5 py-0.5 rounded font-medium">
@@ -238,7 +243,6 @@ export default function QuestionManager() {
                               </span>
                             ))}
                           </div>
-                          {/* Expanded options */}
                           {expandedId === q._id && (
                             <div className="mt-3 space-y-1.5">
                               {q.options.map((opt, i) => (
@@ -252,11 +256,7 @@ export default function QuestionManager() {
                           )}
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            onClick={() => setExpandedId(expandedId === q._id ? null : q._id)}
-                            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition"
-                            title="Preview options"
-                          >
+                          <button onClick={() => setExpandedId(expandedId === q._id ? null : q._id)} className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition" title="Preview">
                             {expandedId === q._id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                           </button>
                           <button onClick={() => openEdit(q)} className="p-1.5 text-brand-700 hover:bg-brand-50 rounded-lg transition" title="Edit">
@@ -276,19 +276,18 @@ export default function QuestionManager() {
         )}
       </div>
 
-      {/* Add/Edit Modal */}
+      {/* Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-6">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <h2 className="text-lg font-bold text-gray-900">{editingId ? "Edit Question" : "Add New Question"}</h2>
-              <button onClick={closeForm} className="p-2 hover:bg-gray-100 rounded-lg transition">
-                <X size={18} />
-              </button>
+              <button onClick={closeForm} className="p-2 hover:bg-gray-100 rounded-lg transition"><X size={18} /></button>
             </div>
 
             <form onSubmit={handleSave} className="px-6 py-5 space-y-5">
-              {/* Target Position */}
+
+              {/* Position */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Target Job Position *</label>
                 <div className="flex items-center gap-3 mb-2">
@@ -305,42 +304,33 @@ export default function QuestionManager() {
                 {!form.targetPositions.includes("all") && (
                   <input
                     value={form.targetPositions[0] === "all" ? "" : (form.targetPositions[0] || "")}
-                    onChange={e => setForm(f => ({ ...f, targetPositions: e.target.value ? [e.target.value] : [] }))}
+                    onChange={e => setForm(f => ({ ...f, targetPositions: e.target.value ? [e.target.value] : [""] }))}
                     placeholder="e.g. Restaurant Manager"
                     className="input-field text-sm"
                   />
                 )}
                 <p className="text-xs text-gray-400 mt-1">
                   {form.targetPositions.includes("all")
-                    ? "This question will appear for all candidates regardless of position."
-                    : "Candidates who select this position will get this question."}
+                    ? "This question appears for all candidates."
+                    : "Only candidates who select this position get this question."}
                 </p>
               </div>
 
-              {/* Target Experience */}
+              {/* Experience */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Target Experience Level *</label>
                 <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => toggleExperience("all")}
-                    className={`px-3 py-1.5 text-xs rounded-full border font-medium transition ${form.experienceLevels.includes("all") ? "bg-blue-600 text-white border-blue-600" : "border-gray-300 text-gray-600 hover:border-blue-400"}`}
-                  >
+                  <button type="button" onClick={() => toggleExperience("all")}
+                    className={`px-3 py-1.5 text-xs rounded-full border font-medium transition ${form.experienceLevels.includes("all") ? "bg-blue-600 text-white border-blue-600" : "border-gray-300 text-gray-600 hover:border-blue-400"}`}>
                     All Levels
                   </button>
                   {EXPERIENCE_LEVELS.map(e => (
-                    <button
-                      key={e.value} type="button"
-                      onClick={() => toggleExperience(e.value)}
-                      className={`px-3 py-1.5 text-xs rounded-full border font-medium transition ${form.experienceLevels.includes(e.value) && !form.experienceLevels.includes("all") ? "bg-blue-600 text-white border-blue-600" : "border-gray-300 text-gray-600 hover:border-blue-400"}`}
-                    >
+                    <button key={e.value} type="button" onClick={() => toggleExperience(e.value)}
+                      className={`px-3 py-1.5 text-xs rounded-full border font-medium transition ${form.experienceLevels.includes(e.value) && !form.experienceLevels.includes("all") ? "bg-blue-600 text-white border-blue-600" : "border-gray-300 text-gray-600 hover:border-blue-400"}`}>
                       {e.label}
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-gray-400 mt-1">
-                  Selected: {form.experienceLevels.includes("all") ? "All Levels" : form.experienceLevels.join(", ") || "None"}
-                </p>
               </div>
 
               {/* Section */}
@@ -354,13 +344,11 @@ export default function QuestionManager() {
                   }}
                   className="input-field text-sm"
                 >
-                  {SECTIONS.map(s => (
-                    <option key={s.code} value={s.code}>Section {s.code} — {s.label}</option>
-                  ))}
+                  {SECTIONS.map(s => <option key={s.code} value={s.code}>Section {s.code} — {s.label}</option>)}
                 </select>
               </div>
 
-              {/* Question */}
+              {/* Question text */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Question Text *</label>
                 <textarea
@@ -375,18 +363,15 @@ export default function QuestionManager() {
 
               {/* Options */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Answer Options * <span className="text-xs font-normal text-gray-400">(click radio to set correct answer)</span></label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Answer Options * <span className="text-xs font-normal text-gray-400">(click radio = correct answer)</span>
+                </label>
                 <div className="space-y-2">
                   {form.options.map((opt, i) => (
                     <div key={i} className={`flex items-center gap-2 p-2 rounded-lg border transition ${form.correctAnswer === i ? "border-green-400 bg-green-50" : "border-gray-200"}`}>
-                      <input
-                        type="radio"
-                        name="correct"
-                        checked={form.correctAnswer === i}
+                      <input type="radio" name="correct" checked={form.correctAnswer === i}
                         onChange={() => setForm(f => ({ ...f, correctAnswer: i }))}
-                        className="accent-green-600 shrink-0"
-                        title="Mark as correct"
-                      />
+                        className="accent-green-600 shrink-0" />
                       <span className="text-sm font-semibold text-gray-500 w-5">{String.fromCharCode(65+i)}.</span>
                       <input
                         value={opt}
