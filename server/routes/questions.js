@@ -28,35 +28,45 @@ router.get("/", protect, async (req, res) => {
   }
 });
 
-const qValidation = [
-  body("question").trim().notEmpty().withMessage("Question text is required"),
-  body("options").isArray({ min: 4, max: 4 }).withMessage("Need exactly 4 options"),
-  body("options.*").trim().notEmpty().withMessage("All options must be non-empty"),
-  body("correctAnswer").isInt({ min: 0, max: 3 }).withMessage("Correct answer must be 0-3"),
-  body("section").trim().notEmpty().withMessage("Section name is required"),
-  body("sectionCode").isIn(["A","B","C","D"]).withMessage("Section code must be A-D")
-];
-
 // POST /api/questions
-router.post("/", protect, qValidation, async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+router.post("/", protect, async (req, res) => {
+  const { question, options, correctAnswer, section, sectionCode, targetPositions, experienceLevels } = req.body;
+  if (!question || !question.trim()) return res.status(400).json({ message: "Question text is required" });
+  if (!Array.isArray(options) || options.length !== 4) return res.status(400).json({ message: "Need exactly 4 options" });
+  if (options.some(o => !o || !o.trim())) return res.status(400).json({ message: "All 4 options must be filled" });
+  if (correctAnswer === undefined || correctAnswer < 0 || correctAnswer > 3) return res.status(400).json({ message: "Correct answer must be 0-3" });
+  if (!section || !sectionCode || !["A","B","C","D"].includes(sectionCode)) return res.status(400).json({ message: "Valid section required" });
   try {
-    const q = await Question.create({ ...req.body, createdBy: req.admin._id });
+    const q = await Question.create({
+      question: question.trim(),
+      options: options.map(o => o.trim()),
+      correctAnswer: Number(correctAnswer),
+      section,
+      sectionCode,
+      targetPositions: Array.isArray(targetPositions) && targetPositions.length ? targetPositions : ["all"],
+      experienceLevels: Array.isArray(experienceLevels) && experienceLevels.length ? experienceLevels : ["all"],
+      isActive: req.body.isActive !== false,
+      createdBy: req.admin._id
+    });
     res.status(201).json(q);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Create question error:", error);
+    res.status(500).json({ message: "Server error", detail: error.message });
   }
 });
 
 // PUT /api/questions/:id
 router.put("/:id", protect, async (req, res) => {
   try {
-    const q = await Question.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    const update = { ...req.body };
+    if (update.correctAnswer !== undefined) update.correctAnswer = Number(update.correctAnswer);
+    if (update.options) update.options = update.options.map(o => o.trim());
+    if (update.question) update.question = update.question.trim();
+    const q = await Question.findByIdAndUpdate(req.params.id, update, { new: true });
     if (!q) return res.status(404).json({ message: "Not found" });
     res.json(q);
   } catch (error) {
+    console.error("Update question error:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
