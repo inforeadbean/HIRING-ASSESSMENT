@@ -24,7 +24,10 @@ export default function Home() {
       .catch(() => {});
 
     const socket = io(SOCKET_URL, { transports: ["websocket", "polling"] });
-    socket.on("timer-updated", (data) => setTimerMinutes(data.timerMinutes));
+    socket.on("timer-updated", (data) => {
+      setTimerMinutes(data.timerMinutes);
+      if (data.timerEnabled !== undefined) setTimerEnabled(data.timerEnabled !== false);
+    });
     return () => socket.disconnect();
   }, []);
 
@@ -65,8 +68,12 @@ export default function Home() {
         <div className="grid grid-cols-3 gap-4 mb-8">
           {[
             { icon: <ClipboardList size={20} />, label: "4 Sections", sub: "MCQ Format" },
-            { icon: <Clock size={20} />, label: `${timerMinutes} Minutes`, sub: "Timed Assessment" },
-            { icon: <CheckCircle size={20} />, label: "Role-Based", sub: "Tailored Questions" }
+            {
+              icon: <Clock size={20} />,
+              label: timerEnabled ? `${timerMinutes} Minutes` : "No Time Limit",
+              sub: timerEnabled ? "Timed Assessment" : "Open Assessment"
+            },
+            { icon: <CheckCircle size={20} />, label: "40 Questions", sub: "One Correct Answer" }
           ].map((item, i) => (
             <div key={i} className="card text-center">
               <div className="inline-flex items-center justify-center w-10 h-10 bg-brand-50 text-brand-700 rounded-xl mb-2">
@@ -98,7 +105,11 @@ export default function Home() {
             </div>
 
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
-              <strong>Note:</strong> You have {timerMinutes} minutes to complete the assessment. Questions are tailored to your selected position and experience. Each question has one correct answer.
+              <strong>Note:</strong>{" "}
+              {timerEnabled
+                ? `You have ${timerMinutes} minutes to complete the assessment. Once started, you cannot exit without submitting.`
+                : "Complete the assessment at your own pace. Once started, you cannot exit without submitting."
+              }{" "}Each question has one correct answer.
             </div>
 
             <button type="submit" disabled={loading} className="btn-primary w-full text-base">

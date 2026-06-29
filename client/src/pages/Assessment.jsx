@@ -28,6 +28,10 @@ export default function Assessment() {
       .then(res => setQuestions(res.data.questions))
       .catch(() => toast.error("Failed to load questions"))
       .finally(() => setLoading(false));
+
+    const warnOnLeave = (e) => { e.preventDefault(); e.returnValue = ""; };
+    window.addEventListener("beforeunload", warnOnLeave);
+    return () => window.removeEventListener("beforeunload", warnOnLeave);
   }, []);
 
   const handleAnswer = (optionIndex) => {
@@ -57,11 +61,6 @@ export default function Assessment() {
   }, [answers, session.sessionId, startTime, submitting, navigate]);
 
   const handleSubmit = () => {
-    const unanswered = questions.length - Object.keys(answers).length;
-    if (unanswered > 0) {
-      const confirmed = window.confirm(`You have ${unanswered} unanswered question(s). Submit anyway?`);
-      if (!confirmed) return;
-    }
     submitAssessment();
   };
 
@@ -136,6 +135,20 @@ export default function Assessment() {
               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-green-100 border border-green-300" /> Answered</div>
               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-gray-100 border border-gray-300" /> Not answered</div>
             </div>
+            <div className="mt-4 pt-3 border-t border-gray-100">
+              <div className={`text-xs font-medium mb-2 ${answered === questions.length ? "text-green-600" : "text-amber-600"}`}>
+                {answered === questions.length ? "All questions answered!" : `${questions.length - answered} remaining`}
+              </div>
+              {answered === questions.length && (
+                <button
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                  className="w-full text-xs py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition disabled:opacity-60"
+                >
+                  {submitting ? "Submitting..." : "Submit Assessment ✓"}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -183,10 +196,15 @@ export default function Assessment() {
                 <button onClick={() => setCurrent(c => c + 1)} className="btn-primary flex items-center gap-2">
                   Next <ChevronRight size={18} />
                 </button>
-              ) : (
+              ) : answered === questions.length ? (
                 <button onClick={handleSubmit} disabled={submitting} className="btn-primary flex items-center gap-2 bg-green-600 hover:bg-green-700">
                   {submitting ? "Submitting..." : "Submit Assessment ✓"}
                 </button>
+              ) : (
+                <div className="text-right">
+                  <div className="text-xs text-amber-600 font-medium">{questions.length - answered} question(s) unanswered</div>
+                  <div className="text-xs text-gray-400">Answer all to submit</div>
+                </div>
               )}
             </div>
           </div>
