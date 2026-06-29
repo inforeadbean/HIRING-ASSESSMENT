@@ -12,6 +12,7 @@ API.interceptors.request.use((config) => {
 
 export const assessmentAPI = {
   getConfig: () => API.get("/assessment/config"),
+  getPositions: () => API.get("/assessment/positions"),
   getQuestions: (params) => API.get("/assessment/questions", { params }),
   startSession: (data) => API.post("/assessment/start", data),
   submitAnswers: (data) => API.post("/assessment/submit", data)

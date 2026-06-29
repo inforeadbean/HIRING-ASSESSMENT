@@ -5,7 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
 import { Plus, Edit2, Trash2, ArrowLeft, Filter, X, CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
 import RedBeanLogo from "../../components/common/RedBeanLogo";
-import { POSITIONS, EXPERIENCE_LEVELS, SECTIONS } from "../../constants/positions";
+import { EXPERIENCE_LEVELS, SECTIONS } from "../../constants/positions";
 
 const EMPTY_FORM = {
   question: "",
@@ -79,7 +79,7 @@ export default function QuestionManager() {
     e.preventDefault();
     if (form.options.some(o => !o.trim())) return toast.error("All 4 options must be filled");
     if (!form.question.trim()) return toast.error("Question text is required");
-    if (!form.targetPositions.length) return toast.error("Select at least one position");
+    if (!form.targetPositions.length || form.targetPositions.every(p => !p.trim())) return toast.error("Enter a position name or select All Positions");
     if (!form.experienceLevels.length) return toast.error("Select at least one experience level");
     setSaving(true);
     try {
@@ -109,17 +109,6 @@ export default function QuestionManager() {
     } catch {
       toast.error("Delete failed");
     }
-  };
-
-  const togglePosition = (pos) => {
-    setForm(f => {
-      const current = f.targetPositions;
-      if (pos === "all") return { ...f, targetPositions: ["all"] };
-      const without = current.filter(p => p !== "all");
-      return without.includes(pos)
-        ? { ...f, targetPositions: without.filter(p => p !== pos) || ["all"] }
-        : { ...f, targetPositions: [...without, pos] };
-    });
   };
 
   const toggleExperience = (exp) => {
@@ -302,26 +291,29 @@ export default function QuestionManager() {
               {/* Target Position */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Target Job Position *</label>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => togglePosition("all")}
-                    className={`px-3 py-1.5 text-xs rounded-full border font-medium transition ${form.targetPositions.includes("all") ? "bg-brand-700 text-white border-brand-700" : "border-gray-300 text-gray-600 hover:border-brand-400"}`}
-                  >
-                    All Positions
-                  </button>
-                  {POSITIONS.map(p => (
-                    <button
-                      key={p} type="button"
-                      onClick={() => togglePosition(p)}
-                      className={`px-3 py-1.5 text-xs rounded-full border font-medium transition ${form.targetPositions.includes(p) && !form.targetPositions.includes("all") ? "bg-brand-700 text-white border-brand-700" : "border-gray-300 text-gray-600 hover:border-brand-400"}`}
-                    >
-                      {p}
-                    </button>
-                  ))}
+                <div className="flex items-center gap-3 mb-2">
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={form.targetPositions.includes("all")}
+                      onChange={e => setForm(f => ({ ...f, targetPositions: e.target.checked ? ["all"] : [""] }))}
+                      className="accent-brand-700 w-4 h-4"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Apply to All Positions</span>
+                  </label>
                 </div>
+                {!form.targetPositions.includes("all") && (
+                  <input
+                    value={form.targetPositions[0] === "all" ? "" : (form.targetPositions[0] || "")}
+                    onChange={e => setForm(f => ({ ...f, targetPositions: e.target.value ? [e.target.value] : [] }))}
+                    placeholder="e.g. Restaurant Manager"
+                    className="input-field text-sm"
+                  />
+                )}
                 <p className="text-xs text-gray-400 mt-1">
-                  Selected: {form.targetPositions.includes("all") ? "All Positions" : form.targetPositions.join(", ") || "None"}
+                  {form.targetPositions.includes("all")
+                    ? "This question will appear for all candidates regardless of position."
+                    : "Candidates who select this position will get this question."}
                 </p>
               </div>
 

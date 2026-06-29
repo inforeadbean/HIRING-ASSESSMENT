@@ -7,6 +7,16 @@ const Settings = require("../models/Settings");
 const Question = require("../models/Question");
 const staticQuestions = require("../data/questions");
 
+// Public — returns distinct positions that have active questions in DB
+router.get("/positions", async (req, res) => {
+  try {
+    const positions = await Question.distinct("targetPositions", { isActive: true });
+    res.json({ positions: positions.filter(p => p !== "all").sort() });
+  } catch {
+    res.json({ positions: [] });
+  }
+});
+
 router.get("/config", async (req, res) => {
   try {
     let settings = await Settings.findOne({ key: "global" });

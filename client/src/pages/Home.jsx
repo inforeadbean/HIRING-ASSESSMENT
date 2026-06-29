@@ -14,16 +14,24 @@ export default function Home() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", position: "", experience: "" });
   const [loading, setLoading] = useState(false);
   const [timerMinutes, setTimerMinutes] = useState(30);
+  const [dbPositions, setDbPositions] = useState(null); // null = loading, [] = empty
 
   useEffect(() => {
     assessmentAPI.getConfig()
       .then(res => setTimerMinutes(res.data.timerMinutes))
       .catch(() => {});
 
+    assessmentAPI.getPositions()
+      .then(res => setDbPositions(res.data.positions))
+      .catch(() => setDbPositions([]));
+
     const socket = io(SOCKET_URL, { transports: ["websocket", "polling"] });
     socket.on("timer-updated", (data) => setTimerMinutes(data.timerMinutes));
     return () => socket.disconnect();
   }, []);
+
+  // Use DB positions when available, fall back to static list
+  const positionOptions = dbPositions && dbPositions.length > 0 ? dbPositions : POSITIONS;
 
   const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -98,7 +106,7 @@ export default function Home() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Position Applied For *</label>
                 <select name="position" value={form.position} onChange={handleChange} className="input-field" required>
                   <option value="">Select position</option>
-                  {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
+                  {positionOptions.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
               </div>
             </div>
