@@ -81,7 +81,6 @@ export default function AdminDashboard() {
     (data) => {
       setTimerMinutes(data.timerMinutes);
       setTimerInput(data.timerMinutes);
-      toast.success(`Timer updated to ${data.timerMinutes} min by another admin`);
     }
   );
 

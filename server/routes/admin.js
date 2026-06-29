@@ -145,9 +145,9 @@ router.put("/settings", protect, [
       { timerMinutes: parseInt(req.body.timerMinutes) },
       { upsert: true, new: true }
     );
-    // Notify all connected admins about timer change
+    // Broadcast to ALL connected clients (candidates + admins)
     const io = req.app.get("io");
-    if (io) io.to("admins").emit("timer-updated", { timerMinutes: settings.timerMinutes });
+    if (io) io.emit("timer-updated", { timerMinutes: settings.timerMinutes });
     res.json({ timerMinutes: settings.timerMinutes });
   } catch (error) {
     console.error("Settings update error:", error);

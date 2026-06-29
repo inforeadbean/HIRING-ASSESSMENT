@@ -4,6 +4,9 @@ import { assessmentAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { ClipboardList, Clock, Users } from "lucide-react";
 import RedBeanLogo from "../components/common/RedBeanLogo";
+import { io } from "socket.io-client";
+
+const SOCKET_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace("/api", "");
 
 export default function Home() {
   const navigate = useNavigate();
@@ -15,6 +18,13 @@ export default function Home() {
     assessmentAPI.getConfig()
       .then(res => setTimerMinutes(res.data.timerMinutes))
       .catch(() => {});
+
+    // Listen for live timer updates from admin
+    const socket = io(SOCKET_URL, { transports: ["websocket", "polling"] });
+    socket.on("timer-updated", (data) => {
+      setTimerMinutes(data.timerMinutes);
+    });
+    return () => socket.disconnect();
   }, []);
 
   const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
