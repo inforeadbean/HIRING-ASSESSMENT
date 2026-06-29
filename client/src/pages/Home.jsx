@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { assessmentAPI } from "../services/api";
 import toast from "react-hot-toast";
-import { ClipboardList, Clock, Shield, Users } from "lucide-react";
+import { ClipboardList, Clock, Users } from "lucide-react";
+import RedBeanLogo from "../components/common/RedBeanLogo";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -37,15 +38,16 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-10 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-red-50 py-10 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-medium mb-4">
-            <Shield size={16} /> Secure Hiring Assessment
+          <div className="flex justify-center mb-5">
+            <RedBeanLogo size="lg" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">Hiring Assessment Portal</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Hiring Assessment Portal</h1>
           <p className="text-gray-500 text-lg">Complete the assessment to move forward in the selection process</p>
+          <div className="w-16 h-1 bg-brand-700 rounded-full mx-auto mt-4" />
         </div>
 
         {/* Info cards */}
@@ -56,7 +58,7 @@ export default function Home() {
             { icon: <Users size={20} />, label: "MCQ Format", sub: "Single Best Answer" }
           ].map((item, i) => (
             <div key={i} className="card text-center">
-              <div className="inline-flex items-center justify-center w-10 h-10 bg-blue-100 text-blue-600 rounded-xl mb-2">
+              <div className="inline-flex items-center justify-center w-10 h-10 bg-brand-50 text-brand-700 rounded-xl mb-2">
                 {item.icon}
               </div>
               <div className="font-semibold text-gray-900">{item.label}</div>
@@ -110,6 +112,9 @@ export default function Home() {
             </button>
           </form>
         </div>
+
+        {/* Footer */}
+        <p className="text-center text-xs text-gray-400 mt-8">© Red Bean Hospitality · Food for Happiness</p>
       </div>
     </div>
   );

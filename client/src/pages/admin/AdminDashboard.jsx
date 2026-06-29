@@ -7,6 +7,7 @@ import {
   Users, Trophy, TrendingUp, Calendar, Search, Eye, Trash2,
   LogOut, ChevronLeft, ChevronRight, RefreshCw, Settings
 } from "lucide-react";
+import RedBeanLogo from "../../components/common/RedBeanLogo";
 
 const GRADE_BADGE = {
   Excellent: "bg-green-100 text-green-700",
@@ -94,12 +95,15 @@ export default function AdminDashboard() {
       {/* Navbar */}
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Assessment Dashboard</h1>
-            <p className="text-xs text-gray-500">Welcome, {admin?.name}</p>
+          <div className="flex items-center gap-3">
+            <RedBeanLogo size="sm" />
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">Assessment Dashboard</h1>
+              <p className="text-xs text-gray-500">Welcome, {admin?.name}</p>
+            </div>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => { fetchStats(); fetchSubmissions(); }} className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">
+            <button onClick={() => { fetchStats(); fetchSubmissions(); }} className="p-2 text-gray-500 hover:text-brand-700 hover:bg-brand-50 rounded-lg transition">
               <RefreshCw size={18} />
             </button>
             <button onClick={() => { logout(); navigate("/admin/login"); }} className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-600 px-3 py-2 rounded-lg hover:bg-red-50 transition">
@@ -187,7 +191,7 @@ export default function AdminDashboard() {
           </div>
           {loading ? (
             <div className="py-16 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-700 mx-auto" />
             </div>
           ) : submissions.length === 0 ? (
             <div className="py-16 text-center text-gray-400">No submissions found</div>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
 import { Lock, Eye, EyeOff } from "lucide-react";
+import RedBeanLogo from "../../components/common/RedBeanLogo";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -25,14 +26,17 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-700 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-brand-900 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-2xl mb-4">
-            <Lock className="text-blue-600" size={28} />
+          <div className="flex justify-center mb-4">
+            <RedBeanLogo size="lg" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
-          <p className="text-gray-500 text-sm mt-1">Hiring Assessment Management System</p>
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-brand-50 rounded-2xl mb-3">
+            <Lock className="text-brand-700" size={22} />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">HR Admin Portal</h1>
+          <p className="text-gray-500 text-sm mt-1">Red Bean Hospitality · Hiring Management</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -67,6 +71,7 @@ export default function AdminLogin() {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
+        <p className="text-center text-xs text-gray-400 mt-6">© Red Bean Hospitality · Food for Happiness</p>
       </div>
     </div>
   );

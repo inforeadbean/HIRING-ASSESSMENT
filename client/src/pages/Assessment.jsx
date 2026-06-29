@@ -4,8 +4,8 @@ import { assessmentAPI } from "../services/api";
 import Timer from "../components/assessment/Timer";
 import toast from "react-hot-toast";
 import { ChevronLeft, ChevronRight, CheckCircle2, Circle } from "lucide-react";
+import RedBeanLogo from "../components/common/RedBeanLogo";
 
-const SECTION_COLORS = { A: "blue", B: "purple", C: "green", D: "orange" };
 const SECTION_LABELS = { A: "Logical & IQ", B: "Decision Making", C: "Integrity", D: "Stress & Work Style" };
 
 export default function Assessment() {
@@ -64,9 +64,9 @@ export default function Assessment() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-brand-50">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-700 mx-auto mb-4" />
         <p className="text-gray-500">Loading questions...</p>
       </div>
     </div>
@@ -74,7 +74,6 @@ export default function Assessment() {
 
   const q = questions[current];
   if (!q) return null;
-  const sectionColor = SECTION_COLORS[q.sectionCode] || "blue";
   const answered = Object.keys(answers).length;
 
   return (
@@ -82,9 +81,12 @@ export default function Assessment() {
       {/* Top Bar */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div>
-            <div className="text-sm text-gray-500">Question {current + 1} of {questions.length}</div>
-            <div className="font-semibold text-gray-800">{session.candidate?.name}</div>
+          <div className="flex items-center gap-3">
+            <RedBeanLogo size="sm" />
+            <div>
+              <div className="text-sm text-gray-500">Question {current + 1} of {questions.length}</div>
+              <div className="font-semibold text-gray-800">{session.candidate?.name}</div>
+            </div>
           </div>
           <Timer duration={timerMinutes * 60} onExpire={() => { toast.error("Time's up! Submitting..."); submitAssessment(); }} />
           <div className="text-right">
@@ -94,7 +96,7 @@ export default function Assessment() {
         </div>
         {/* Progress bar */}
         <div className="h-1 bg-gray-200">
-          <div className="h-1 bg-blue-600 transition-all" style={{ width: `${((current + 1) / questions.length) * 100}%` }} />
+          <div className="h-1 bg-brand-700 transition-all" style={{ width: `${((current + 1) / questions.length) * 100}%` }} />
         </div>
       </div>
 
@@ -111,7 +113,7 @@ export default function Assessment() {
                     key={i}
                     onClick={() => setCurrent(i)}
                     className={`w-8 h-8 rounded text-xs font-semibold transition-colors ${
-                      i === current ? "bg-blue-600 text-white" :
+                      i === current ? "bg-brand-700 text-white" :
                       isAnswered ? "bg-green-100 text-green-700" :
                       "bg-gray-100 text-gray-500 hover:bg-gray-200"
                     }`}
@@ -122,7 +124,7 @@ export default function Assessment() {
               })}
             </div>
             <div className="mt-4 space-y-1 text-xs">
-              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-blue-600" /> Current</div>
+              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-brand-700" /> Current</div>
               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-green-100 border border-green-300" /> Answered</div>
               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-gray-100 border border-gray-300" /> Not answered</div>
             </div>
@@ -132,7 +134,7 @@ export default function Assessment() {
         {/* Question card */}
         <div className="col-span-3">
           <div className="card">
-            <div className={`inline-flex items-center gap-2 bg-${sectionColor}-100 text-${sectionColor}-700 px-3 py-1 rounded-full text-xs font-medium mb-4`}>
+            <div className="inline-flex items-center gap-2 bg-brand-50 text-brand-700 px-3 py-1 rounded-full text-xs font-medium mb-4">
               Section {q.sectionCode} — {SECTION_LABELS[q.sectionCode]}
             </div>
 
@@ -149,11 +151,11 @@ export default function Assessment() {
                     onClick={() => handleAnswer(i)}
                     className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all font-medium flex items-center gap-3 ${
                       selected
-                        ? "border-blue-500 bg-blue-50 text-blue-800"
+                        ? "border-brand-600 bg-brand-50 text-brand-900"
                         : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700"
                     }`}
                   >
-                    {selected ? <CheckCircle2 size={20} className="text-blue-600 shrink-0" /> : <Circle size={20} className="text-gray-300 shrink-0" />}
+                    {selected ? <CheckCircle2 size={20} className="text-brand-700 shrink-0" /> : <Circle size={20} className="text-gray-300 shrink-0" />}
                     <span className="font-medium text-gray-500 w-5">{String.fromCharCode(65 + i)}.</span>
                     {option}
                   </button>
