@@ -18,6 +18,7 @@ export default function Assessment() {
   const [startTime] = useState(Date.now());
 
   const session = JSON.parse(sessionStorage.getItem("assessmentSession") || "{}");
+  const timerMinutes = session.timerMinutes || 30;
 
   useEffect(() => {
     if (!session.sessionId) { navigate("/"); return; }
@@ -85,7 +86,7 @@ export default function Assessment() {
             <div className="text-sm text-gray-500">Question {current + 1} of {questions.length}</div>
             <div className="font-semibold text-gray-800">{session.candidate?.name}</div>
           </div>
-          <Timer duration={30 * 60} onExpire={() => { toast.error("Time's up! Submitting..."); submitAssessment(); }} />
+          <Timer duration={timerMinutes * 60} onExpire={() => { toast.error("Time's up! Submitting..."); submitAssessment(); }} />
           <div className="text-right">
             <div className="text-sm text-gray-500">Answered</div>
             <div className="font-semibold text-gray-800">{answered}/{questions.length}</div>

@@ -5,7 +5,7 @@ import { adminAPI } from "../../services/api";
 import toast from "react-hot-toast";
 import {
   Users, Trophy, TrendingUp, Calendar, Search, Eye, Trash2,
-  LogOut, ChevronLeft, ChevronRight, RefreshCw
+  LogOut, ChevronLeft, ChevronRight, RefreshCw, Settings
 } from "lucide-react";
 
 const GRADE_BADGE = {
@@ -27,6 +27,9 @@ export default function AdminDashboard() {
   const [search, setSearch] = useState("");
   const [gradeFilter, setGradeFilter] = useState("");
   const [loading, setLoading] = useState(true);
+  const [timerMinutes, setTimerMinutes] = useState(30);
+  const [timerInput, setTimerInput] = useState(30);
+  const [savingTimer, setSavingTimer] = useState(false);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -48,6 +51,12 @@ export default function AdminDashboard() {
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
   useEffect(() => { fetchSubmissions(); }, [fetchSubmissions]);
+  useEffect(() => {
+    adminAPI.getSettings().then(res => {
+      setTimerMinutes(res.data.timerMinutes);
+      setTimerInput(res.data.timerMinutes);
+    }).catch(() => {});
+  }, []);
 
   const handleDelete = async (id, name) => {
     if (!window.confirm(`Delete submission by ${name}? This cannot be undone.`)) return;
@@ -57,6 +66,18 @@ export default function AdminDashboard() {
       fetchSubmissions();
       fetchStats();
     } catch { toast.error("Delete failed"); }
+  };
+
+  const handleSaveTimer = async () => {
+    const val = parseInt(timerInput);
+    if (!val || val < 5 || val > 120) return toast.error("Timer must be between 5 and 120 minutes");
+    setSavingTimer(true);
+    try {
+      await adminAPI.updateSettings({ timerMinutes: val });
+      setTimerMinutes(val);
+      toast.success(`Timer updated to ${val} minutes`);
+    } catch { toast.error("Failed to update timer"); }
+    finally { setSavingTimer(false); }
   };
 
   const handleSearch = (e) => {
@@ -106,6 +127,34 @@ export default function AdminDashboard() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Timer Settings (superadmin only) */}
+        {admin?.role === "superadmin" && (
+          <div className="card mb-6 flex items-center gap-6 flex-wrap">
+            <div className="flex items-center gap-2 text-gray-700 font-semibold">
+              <Settings size={18} className="text-blue-600" /> Assessment Timer
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="number"
+                min={5}
+                max={120}
+                value={timerInput}
+                onChange={e => setTimerInput(e.target.value)}
+                className="input-field w-24 py-1.5 text-center font-semibold"
+              />
+              <span className="text-gray-500 text-sm">minutes</span>
+              <button
+                onClick={handleSaveTimer}
+                disabled={savingTimer || parseInt(timerInput) === timerMinutes}
+                className="btn-primary py-1.5 px-4 text-sm"
+              >
+                {savingTimer ? "Saving..." : "Save"}
+              </button>
+              <span className="text-xs text-gray-400">Current: {timerMinutes} min</span>
+            </div>
           </div>
         )}
 

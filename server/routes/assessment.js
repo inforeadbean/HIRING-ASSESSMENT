@@ -3,7 +3,19 @@ const router = express.Router();
 const { body, validationResult } = require("express-validator");
 const crypto = require("crypto");
 const Submission = require("../models/Submission");
+const Settings = require("../models/Settings");
 const questions = require("../data/questions");
+
+// GET /api/assessment/config - Return public config (timer etc.)
+router.get("/config", async (req, res) => {
+  try {
+    let settings = await Settings.findOne({ key: "global" });
+    if (!settings) settings = await Settings.create({ key: "global" });
+    res.json({ timerMinutes: settings.timerMinutes });
+  } catch (error) {
+    res.json({ timerMinutes: 30 });
+  }
+});
 
 // GET /api/assessment/questions - Return questions without answers
 router.get("/questions", (req, res) => {

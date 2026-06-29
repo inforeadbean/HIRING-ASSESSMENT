@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { body, validationResult } = require("express-validator");
 const Admin = require("../models/Admin");
 const Submission = require("../models/Submission");
+const Settings = require("../models/Settings");
 const { protect, superAdminOnly } = require("../middleware/auth");
 
 const generateToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "8h" });
@@ -116,6 +117,35 @@ router.delete("/submissions/:id", protect, superAdminOnly, async (req, res) => {
   try {
     await Submission.findByIdAndDelete(req.params.id);
     res.json({ message: "Submission deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// GET /api/admin/settings
+router.get("/settings", protect, async (req, res) => {
+  try {
+    let settings = await Settings.findOne({ key: "global" });
+    if (!settings) settings = await Settings.create({ key: "global" });
+    res.json({ timerMinutes: settings.timerMinutes });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// PUT /api/admin/settings (superadmin only)
+router.put("/settings", protect, superAdminOnly, [
+  body("timerMinutes").isInt({ min: 5, max: 120 }).withMessage("Timer must be between 5 and 120 minutes")
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  try {
+    const settings = await Settings.findOneAndUpdate(
+      { key: "global" },
+      { timerMinutes: req.body.timerMinutes },
+      { upsert: true, new: true }
+    );
+    res.json({ timerMinutes: settings.timerMinutes });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }

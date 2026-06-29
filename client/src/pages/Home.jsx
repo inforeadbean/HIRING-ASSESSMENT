@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { assessmentAPI } from "../services/api";
 import toast from "react-hot-toast";
@@ -8,6 +8,13 @@ export default function Home() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", email: "", phone: "", position: "", experience: "" });
   const [loading, setLoading] = useState(false);
+  const [timerMinutes, setTimerMinutes] = useState(30);
+
+  useEffect(() => {
+    assessmentAPI.getConfig()
+      .then(res => setTimerMinutes(res.data.timerMinutes))
+      .catch(() => {});
+  }, []);
 
   const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -20,7 +27,7 @@ export default function Home() {
     try {
       const res = await assessmentAPI.startSession(form);
       const { sessionId } = res.data;
-      sessionStorage.setItem("assessmentSession", JSON.stringify({ sessionId, candidate: form }));
+      sessionStorage.setItem("assessmentSession", JSON.stringify({ sessionId, candidate: form, timerMinutes }));
       navigate("/assessment");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to start. Please try again.");
@@ -45,7 +52,7 @@ export default function Home() {
         <div className="grid grid-cols-3 gap-4 mb-8">
           {[
             { icon: <ClipboardList size={20} />, label: "20 Questions", sub: "4 Sections" },
-            { icon: <Clock size={20} />, label: "30 Minutes", sub: "Timed Assessment" },
+            { icon: <Clock size={20} />, label: `${timerMinutes} Minutes`, sub: "Timed Assessment" },
             { icon: <Users size={20} />, label: "MCQ Format", sub: "Single Best Answer" }
           ].map((item, i) => (
             <div key={i} className="card text-center">
@@ -95,7 +102,7 @@ export default function Home() {
             </div>
 
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
-              <strong>Instructions:</strong> You have 30 minutes to complete 20 questions. Each question has one correct answer. You can navigate between questions but must submit before time runs out.
+              <strong>Instructions:</strong> You have {timerMinutes} minutes to complete 20 questions. Each question has one correct answer. You can navigate between questions but must submit before time runs out.
             </div>
 
             <button type="submit" disabled={loading} className="btn-primary w-full text-base">
