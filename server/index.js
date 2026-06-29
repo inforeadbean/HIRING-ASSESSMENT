@@ -37,6 +37,7 @@ app.use("/api/assessment/submit", rateLimit({ windowMs: 60 * 60 * 1000, max: 5, 
 
 app.use("/api/assessment", require("./routes/assessment"));
 app.use("/api/admin", require("./routes/admin"));
+app.use("/api/questions", require("./routes/questions"));
 
 app.get("/api/health", (req, res) => res.json({ status: "ok", time: new Date() }));
 

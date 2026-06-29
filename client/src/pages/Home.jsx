@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { assessmentAPI } from "../services/api";
 import toast from "react-hot-toast";
-import { ClipboardList, Clock, Users } from "lucide-react";
+import { ClipboardList, Clock, CheckCircle } from "lucide-react";
 import RedBeanLogo from "../components/common/RedBeanLogo";
 import { io } from "socket.io-client";
+import { POSITIONS, EXPERIENCE_LEVELS } from "../constants/positions";
 
 const SOCKET_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace("/api", "");
 
@@ -19,11 +20,8 @@ export default function Home() {
       .then(res => setTimerMinutes(res.data.timerMinutes))
       .catch(() => {});
 
-    // Listen for live timer updates from admin
     const socket = io(SOCKET_URL, { transports: ["websocket", "polling"] });
-    socket.on("timer-updated", (data) => {
-      setTimerMinutes(data.timerMinutes);
-    });
+    socket.on("timer-updated", (data) => setTimerMinutes(data.timerMinutes));
     return () => socket.disconnect();
   }, []);
 
@@ -31,8 +29,8 @@ export default function Home() {
 
   const handleStart = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.phone || !form.position) {
-      return toast.error("Please fill all required fields");
+    if (!form.name.trim() || !form.email || !form.phone.trim() || !form.position || !form.experience) {
+      return toast.error("Please fill all fields");
     }
     setLoading(true);
     try {
@@ -63,9 +61,9 @@ export default function Home() {
         {/* Info cards */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           {[
-            { icon: <ClipboardList size={20} />, label: "20 Questions", sub: "4 Sections" },
+            { icon: <ClipboardList size={20} />, label: "4 Sections", sub: "MCQ Format" },
             { icon: <Clock size={20} />, label: `${timerMinutes} Minutes`, sub: "Timed Assessment" },
-            { icon: <Users size={20} />, label: "MCQ Format", sub: "Single Best Answer" }
+            { icon: <CheckCircle size={20} />, label: "Role-Based", sub: "Tailored Questions" }
           ].map((item, i) => (
             <div key={i} className="card text-center">
               <div className="inline-flex items-center justify-center w-10 h-10 bg-brand-50 text-brand-700 rounded-xl mb-2">
@@ -98,23 +96,22 @@ export default function Home() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Position Applied For *</label>
-                <input name="position" value={form.position} onChange={handleChange} placeholder="e.g. Restaurant Manager" className="input-field" required />
+                <select name="position" value={form.position} onChange={handleChange} className="input-field" required>
+                  <option value="">Select position</option>
+                  {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Years of Experience</label>
-              <select name="experience" value={form.experience} onChange={handleChange} className="input-field">
-                <option value="">Select experience</option>
-                <option value="0-1">0-1 years (Fresher)</option>
-                <option value="1-3">1-3 years</option>
-                <option value="3-5">3-5 years</option>
-                <option value="5-10">5-10 years</option>
-                <option value="10+">10+ years</option>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Years of Experience *</label>
+              <select name="experience" value={form.experience} onChange={handleChange} className="input-field" required>
+                <option value="">Select experience level</option>
+                {EXPERIENCE_LEVELS.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
               </select>
             </div>
 
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
-              <strong>Instructions:</strong> You have {timerMinutes} minutes to complete 20 questions. Each question has one correct answer. You can navigate between questions but must submit before time runs out.
+              <strong>Note:</strong> You have {timerMinutes} minutes to complete the assessment. Questions are tailored to your selected position and experience. Each question has one correct answer.
             </div>
 
             <button type="submit" disabled={loading} className="btn-primary w-full text-base">
@@ -123,7 +120,6 @@ export default function Home() {
           </form>
         </div>
 
-        {/* Footer */}
         <p className="text-center text-xs text-gray-400 mt-8">© Red Bean Hospitality · Food for Happiness</p>
       </div>
     </div>

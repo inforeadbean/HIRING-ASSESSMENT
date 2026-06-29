@@ -22,7 +22,8 @@ export default function Assessment() {
 
   useEffect(() => {
     if (!session.sessionId) { navigate("/"); return; }
-    assessmentAPI.getQuestions()
+    const { position, experience } = session.candidate || {};
+    assessmentAPI.getQuestions({ position, experience })
       .then(res => setQuestions(res.data.questions))
       .catch(() => toast.error("Failed to load questions"))
       .finally(() => setLoading(false));
@@ -37,7 +38,7 @@ export default function Assessment() {
     setSubmitting(true);
     try {
       const formattedAnswers = Object.entries(answers).map(([id, selectedOption]) => ({
-        questionId: parseInt(id),
+        questionId: id,
         selectedOption
       }));
       const timeTaken = Math.round((Date.now() - startTime) / 1000);

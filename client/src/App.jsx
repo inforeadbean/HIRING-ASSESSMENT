@@ -8,6 +8,7 @@ import Complete from "./pages/Complete";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import SubmissionView from "./pages/admin/SubmissionView";
+import QuestionManager from "./pages/admin/QuestionManager";
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/submissions/:id" element={<ProtectedRoute><SubmissionView /></ProtectedRoute>} />
+          <Route path="/admin/questions" element={<ProtectedRoute><QuestionManager /></ProtectedRoute>} />
           <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

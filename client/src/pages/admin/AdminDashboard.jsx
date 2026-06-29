@@ -6,7 +6,7 @@ import { useSocket } from "../../hooks/useSocket";
 import toast from "react-hot-toast";
 import {
   Users, Trophy, TrendingUp, Calendar, Search, Eye, Trash2,
-  LogOut, ChevronLeft, ChevronRight, RefreshCw, Settings, Bell
+  LogOut, ChevronLeft, ChevronRight, RefreshCw, Settings, Bell, FileQuestion
 } from "lucide-react";
 import RedBeanLogo from "../../components/common/RedBeanLogo";
 
@@ -131,6 +131,13 @@ export default function AdminDashboard() {
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-700 text-white text-[9px] rounded-full flex items-center justify-center font-bold">{newCount}</span>
               </div>
             )}
+            <button
+              onClick={() => navigate("/admin/questions")}
+              className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-brand-700 px-3 py-1.5 rounded-lg hover:bg-brand-50 transition font-medium"
+              title="Manage Questions"
+            >
+              <FileQuestion size={15} /> Questions
+            </button>
             <button onClick={() => { fetchStats(); fetchSubmissions(); setNewCount(0); }} className="p-2 text-gray-500 hover:text-brand-700 hover:bg-brand-50 rounded-lg transition" title="Refresh">
               <RefreshCw size={17} />
             </button>

@@ -4,7 +4,8 @@ const { body, validationResult } = require("express-validator");
 const crypto = require("crypto");
 const Submission = require("../models/Submission");
 const Settings = require("../models/Settings");
-const questions = require("../data/questions");
+const Question = require("../models/Question");
+const staticQuestions = require("../data/questions");
 
 router.get("/config", async (req, res) => {
   try {
@@ -16,9 +17,42 @@ router.get("/config", async (req, res) => {
   }
 });
 
-router.get("/questions", (req, res) => {
-  const safeQuestions = questions.map(({ correctAnswer, explanation, ...q }) => q);
-  res.json({ questions: safeQuestions, total: safeQuestions.length });
+async function fetchQuestionsForCandidate(position, experience) {
+  try {
+    const conditions = [];
+    if (position) conditions.push({ $or: [{ targetPositions: position }, { targetPositions: "all" }] });
+    if (experience) conditions.push({ $or: [{ experienceLevels: experience }, { experienceLevels: "all" }] });
+
+    const filter = { isActive: true };
+    if (conditions.length) filter.$and = conditions;
+
+    const dbQuestions = await Question.find(filter).sort({ sectionCode: 1, createdAt: 1 });
+    if (dbQuestions.length > 0) return { questions: dbQuestions, source: "db" };
+  } catch (err) {
+    console.error("DB question fetch error:", err);
+  }
+  return { questions: staticQuestions, source: "static" };
+}
+
+// GET /api/assessment/questions?position=...&experience=...
+router.get("/questions", async (req, res) => {
+  const { position, experience } = req.query;
+  const { questions, source } = await fetchQuestionsForCandidate(position, experience);
+
+  if (source === "db") {
+    const safe = questions.map(q => ({
+      id: q._id.toString(),
+      question: q.question,
+      options: q.options,
+      section: q.section,
+      sectionCode: q.sectionCode
+    }));
+    return res.json({ questions: safe, total: safe.length });
+  }
+
+  // Static fallback
+  const safe = questions.map(({ correctAnswer, explanation, ...q }) => q);
+  res.json({ questions: safe, total: safe.length });
 });
 
 router.post("/start", [
@@ -62,17 +96,29 @@ router.post("/submit", [
     const submission = await Submission.findOne({ sessionId, status: "in-progress" });
     if (!submission) return res.status(404).json({ message: "Session not found or already submitted" });
 
+    const { candidate } = submission;
+    const { questions, source } = await fetchQuestionsForCandidate(candidate.position, candidate.experience);
+
     const scoredAnswers = [];
     const sectionScores = { A: { score: 0, total: 0 }, B: { score: 0, total: 0 }, C: { score: 0, total: 0 }, D: { score: 0, total: 0 } };
     let totalScore = 0;
 
     questions.forEach(q => {
-      const submitted = answers.find(a => a.questionId === q.id);
+      const qId = source === "db" ? q._id.toString() : String(q.id);
+      const submitted = answers.find(a => String(a.questionId) === qId);
       const selectedOption = submitted ? submitted.selectedOption : null;
       const isCorrect = selectedOption === q.correctAnswer;
       if (isCorrect) { totalScore++; sectionScores[q.sectionCode].score++; }
       sectionScores[q.sectionCode].total++;
-      scoredAnswers.push({ questionId: q.id, section: q.section, sectionCode: q.sectionCode, question: q.question, selectedOption, correctAnswer: q.correctAnswer, isCorrect });
+      scoredAnswers.push({
+        questionId: qId,
+        section: q.section,
+        sectionCode: q.sectionCode,
+        question: q.question,
+        selectedOption,
+        correctAnswer: q.correctAnswer,
+        isCorrect
+      });
     });
 
     submission.answers = scoredAnswers;
@@ -89,7 +135,6 @@ router.post("/submit", [
     submission.submittedAt = new Date();
     await submission.save();
 
-    // Emit real-time event to all connected admins
     const io = req.app.get("io");
     if (io) {
       io.to("admins").emit("new-submission", {

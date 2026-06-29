@@ -12,7 +12,7 @@ API.interceptors.request.use((config) => {
 
 export const assessmentAPI = {
   getConfig: () => API.get("/assessment/config"),
-  getQuestions: () => API.get("/assessment/questions"),
+  getQuestions: (params) => API.get("/assessment/questions", { params }),
   startSession: (data) => API.post("/assessment/start", data),
   submitAnswers: (data) => API.post("/assessment/submit", data)
 };
@@ -26,4 +26,12 @@ export const adminAPI = {
   deleteSubmission: (id) => API.delete(`/admin/submissions/${id}`),
   getSettings: () => API.get("/admin/settings"),
   updateSettings: (data) => API.put("/admin/settings", data)
+};
+
+export const questionsAPI = {
+  getAll: (params) => API.get("/questions", { params }),
+  getPositions: () => API.get("/questions/positions"),
+  create: (data) => API.post("/questions", data),
+  update: (id, data) => API.put(`/questions/${id}`, data),
+  remove: (id) => API.delete(`/questions/${id}`)
 };
