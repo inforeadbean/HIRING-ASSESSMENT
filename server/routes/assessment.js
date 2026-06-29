@@ -6,34 +6,29 @@ const Submission = require("../models/Submission");
 const Settings = require("../models/Settings");
 const questions = require("../data/questions");
 
-// GET /api/assessment/config - Return public config (timer etc.)
 router.get("/config", async (req, res) => {
   try {
     let settings = await Settings.findOne({ key: "global" });
     if (!settings) settings = await Settings.create({ key: "global" });
     res.json({ timerMinutes: settings.timerMinutes });
-  } catch (error) {
+  } catch {
     res.json({ timerMinutes: 30 });
   }
 });
 
-// GET /api/assessment/questions - Return questions without answers
 router.get("/questions", (req, res) => {
   const safeQuestions = questions.map(({ correctAnswer, explanation, ...q }) => q);
   res.json({ questions: safeQuestions, total: safeQuestions.length });
 });
 
-// POST /api/assessment/start - Register candidate and start session
 router.post("/start", [
-  body("name").trim().notEmpty().withMessage("Name is required"),
-  body("email").isEmail().withMessage("Valid email is required"),
-  body("phone").trim().notEmpty().withMessage("Phone is required"),
-  body("position").trim().notEmpty().withMessage("Position is required")
+  body("name").trim().notEmpty(),
+  body("email").isEmail(),
+  body("phone").trim().notEmpty(),
+  body("position").trim().notEmpty()
 ], async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
   try {
     const sessionId = crypto.randomUUID();
     const submission = new Submission({
@@ -56,23 +51,17 @@ router.post("/start", [
   }
 });
 
-// POST /api/assessment/submit - Submit answers
 router.post("/submit", [
-  body("sessionId").notEmpty().withMessage("Session ID required"),
-  body("answers").isArray({ min: 1 }).withMessage("Answers are required")
+  body("sessionId").notEmpty(),
+  body("answers").isArray({ min: 1 })
 ], async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
   try {
     const { sessionId, answers, timeTaken } = req.body;
     const submission = await Submission.findOne({ sessionId, status: "in-progress" });
-    if (!submission) {
-      return res.status(404).json({ message: "Session not found or already submitted" });
-    }
+    if (!submission) return res.status(404).json({ message: "Session not found or already submitted" });
 
-    // Score the answers
     const scoredAnswers = [];
     const sectionScores = { A: { score: 0, total: 0 }, B: { score: 0, total: 0 }, C: { score: 0, total: 0 }, D: { score: 0, total: 0 } };
     let totalScore = 0;
@@ -81,20 +70,9 @@ router.post("/submit", [
       const submitted = answers.find(a => a.questionId === q.id);
       const selectedOption = submitted ? submitted.selectedOption : null;
       const isCorrect = selectedOption === q.correctAnswer;
-      if (isCorrect) {
-        totalScore++;
-        sectionScores[q.sectionCode].score++;
-      }
+      if (isCorrect) { totalScore++; sectionScores[q.sectionCode].score++; }
       sectionScores[q.sectionCode].total++;
-      scoredAnswers.push({
-        questionId: q.id,
-        section: q.section,
-        sectionCode: q.sectionCode,
-        question: q.question,
-        selectedOption,
-        correctAnswer: q.correctAnswer,
-        isCorrect
-      });
+      scoredAnswers.push({ questionId: q.id, section: q.section, sectionCode: q.sectionCode, question: q.question, selectedOption, correctAnswer: q.correctAnswer, isCorrect });
     });
 
     submission.answers = scoredAnswers;
@@ -110,6 +88,21 @@ router.post("/submit", [
     submission.status = "completed";
     submission.submittedAt = new Date();
     await submission.save();
+
+    // Emit real-time event to all connected admins
+    const io = req.app.get("io");
+    if (io) {
+      io.to("admins").emit("new-submission", {
+        id: submission._id,
+        candidate: submission.candidate,
+        score: submission.score,
+        totalQuestions: submission.totalQuestions,
+        percentage: submission.percentage,
+        grade: submission.grade,
+        timeTaken: submission.timeTaken,
+        submittedAt: submission.submittedAt
+      });
+    }
 
     res.json({
       message: "Assessment submitted successfully",

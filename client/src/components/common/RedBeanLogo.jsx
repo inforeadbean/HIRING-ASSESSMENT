@@ -1,17 +1,28 @@
-export default function RedBeanLogo({ size = "md" }) {
-  const sizes = {
-    sm: { wrap: "w-8 h-8", text: "text-[7px]", sub: "text-[4px]" },
-    md: { wrap: "w-12 h-12", text: "text-[10px]", sub: "text-[6px]" },
-    lg: { wrap: "w-20 h-20", text: "text-[17px]", sub: "text-[9px]" },
-  };
-  const s = sizes[size] || sizes.md;
+export default function RedBeanLogo({ size = "md", className = "" }) {
+  const dim = { sm: 36, md: 56, lg: 88 }[size] || 56;
   return (
-    <div className={`${s.wrap} relative flex items-center justify-center rounded-full border-2 border-brand-700 bg-white shrink-0`}>
-      <div className="text-center leading-tight">
-        <div className={`font-black text-brand-700 ${s.text} tracking-tight`}>red</div>
-        <div className={`font-black text-brand-700 ${s.text} tracking-tight`}>bean</div>
-        <div className={`text-gray-500 font-semibold uppercase tracking-widest ${s.sub}`}>hospitality</div>
-      </div>
-    </div>
+    <svg width={dim} height={dim} viewBox="0 0 100 100" className={className} xmlns="http://www.w3.org/2000/svg">
+      {/* Outer dotted ring */}
+      <circle cx="50" cy="50" r="47" fill="none" stroke="#C41E3A" strokeWidth="1.5" strokeDasharray="3 4" />
+      {/* Inner circle line */}
+      <circle cx="50" cy="50" r="40" fill="none" stroke="#C41E3A" strokeWidth="0.8" opacity="0.4" />
+      {/* Curved top text: FOOD FOR HAPPINESS */}
+      <path id="topArc" d="M 15,50 A 35,35 0 0,1 85,50" fill="none" />
+      <text fontSize="7" fill="#1C1C1C" fontFamily="system-ui,sans-serif" fontWeight="600" letterSpacing="2">
+        <textPath href="#topArc" startOffset="5%">FOOD FOR HAPPINESS</textPath>
+      </text>
+      {/* red text */}
+      <text x="50" y="46" textAnchor="middle" fontSize="20" fontWeight="900" fill="#C41E3A" fontFamily="Georgia,serif" letterSpacing="-1">red</text>
+      {/* Coffee bean icon */}
+      <ellipse cx="50" cy="52" rx="5" ry="3.5" fill="#C41E3A" opacity="0.85"/>
+      <path d="M 45,52 Q 50,49 55,52" fill="none" stroke="white" strokeWidth="0.8"/>
+      {/* bean text */}
+      <text x="50" y="67" textAnchor="middle" fontSize="20" fontWeight="900" fill="#C41E3A" fontFamily="Georgia,serif" letterSpacing="-1">bean</text>
+      {/* HOSPITALITY */}
+      <path id="bottomArc" d="M 20,72 A 32,32 0 0,0 80,72" fill="none" />
+      <text fontSize="5.5" fill="#555" fontFamily="system-ui,sans-serif" fontWeight="600" letterSpacing="2.5">
+        <textPath href="#bottomArc" startOffset="8%">— HOSPITALITY —</textPath>
+      </text>
+    </svg>
   );
 }

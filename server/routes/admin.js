@@ -133,21 +133,25 @@ router.get("/settings", protect, async (req, res) => {
   }
 });
 
-// PUT /api/admin/settings (superadmin only)
-router.put("/settings", protect, superAdminOnly, [
-  body("timerMinutes").isInt({ min: 5, max: 120 }).withMessage("Timer must be between 5 and 120 minutes")
+// PUT /api/admin/settings
+router.put("/settings", protect, [
+  body("timerMinutes").isInt({ min: 1, max: 180 }).withMessage("Timer must be between 1 and 180 minutes")
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
   try {
     const settings = await Settings.findOneAndUpdate(
       { key: "global" },
-      { timerMinutes: req.body.timerMinutes },
+      { timerMinutes: parseInt(req.body.timerMinutes) },
       { upsert: true, new: true }
     );
+    // Notify all connected admins about timer change
+    const io = req.app.get("io");
+    if (io) io.to("admins").emit("timer-updated", { timerMinutes: settings.timerMinutes });
     res.json({ timerMinutes: settings.timerMinutes });
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    console.error("Settings update error:", error);
+    res.status(500).json({ message: "Server error", detail: error.message });
   }
 });
 
