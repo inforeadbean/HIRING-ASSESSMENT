@@ -79,36 +79,38 @@ export default function SubmissionView() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-5 py-6 space-y-5">
+      <div className="max-w-5xl mx-auto px-3 sm:px-5 py-4 sm:py-6 space-y-4 sm:space-y-5">
 
         {/* ── Candidate header card ── */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className={`bg-gradient-to-r ${gc.header} px-6 py-5`}>
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 shrink-0">
-                  <span className="text-2xl font-black text-white">{candidate.name.charAt(0).toUpperCase()}</span>
+          <div className={`bg-gradient-to-r ${gc.header} px-4 sm:px-6 py-4 sm:py-5`}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 shrink-0">
+                  <span className="text-xl sm:text-2xl font-black text-white">{candidate.name.charAt(0).toUpperCase()}</span>
                 </div>
-                <div>
-                  <h1 className="text-xl font-bold text-white">{candidate.name}</h1>
-                  <div className="flex flex-wrap gap-3 mt-1 text-white/70 text-xs">
-                    <span className="flex items-center gap-1"><Mail size={11} /> {candidate.email}</span>
+                <div className="min-w-0">
+                  <h1 className="text-lg sm:text-xl font-bold text-white truncate">{candidate.name}</h1>
+                  <div className="flex flex-wrap gap-2 sm:gap-3 mt-1 text-white/70 text-xs">
+                    <span className="flex items-center gap-1 truncate max-w-[200px]"><Mail size={11} /> {candidate.email}</span>
                     {candidate.phone && <span className="flex items-center gap-1"><Phone size={11} /> {candidate.phone}</span>}
                   </div>
                 </div>
               </div>
 
-              {/* Score badge */}
-              <div className="bg-white/15 backdrop-blur-sm border border-white/25 rounded-2xl px-8 py-4 text-center">
-                <div className="text-5xl font-black text-white leading-none">{percentage}%</div>
-                <div className="text-white/60 text-xs mt-1.5">{score} / {totalQuestions} correct</div>
-                <div className={`mt-2.5 inline-block px-4 py-1 rounded-full text-xs font-bold border ${gc.badge}`}>{grade}</div>
+              {/* Score badge — full width on mobile, inline on desktop */}
+              <div className="bg-white/15 backdrop-blur-sm border border-white/25 rounded-2xl px-5 sm:px-8 py-3 sm:py-4 text-center flex sm:flex-col items-center justify-between sm:justify-center gap-3 sm:gap-0">
+                <div className="text-4xl sm:text-5xl font-black text-white leading-none">{percentage}%</div>
+                <div className="flex flex-col items-center sm:items-center">
+                  <div className="text-white/60 text-xs">{score}/{totalQuestions} correct</div>
+                  <div className={`mt-1.5 sm:mt-2.5 inline-block px-3 sm:px-4 py-1 rounded-full text-xs font-bold border ${gc.badge}`}>{grade}</div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Meta info strip */}
-          <div className="px-6 py-3 bg-gray-50/50 border-t border-gray-100 flex flex-wrap gap-x-6 gap-y-1">
+          <div className="px-4 sm:px-6 py-3 bg-gray-50/50 border-t border-gray-100 flex flex-wrap gap-x-4 sm:gap-x-6 gap-y-1">
             <span className="flex items-center gap-1.5 text-xs text-gray-500">
               <Calendar size={12} className="text-gray-400" />
               Submitted {formatDate(submittedAt)}
@@ -130,7 +132,7 @@ export default function SubmissionView() {
             <BarChart2 size={15} className="text-gray-500" />
             <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Section Breakdown</h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
             {Object.entries(sectionScores || {}).map(([key, sec]) => {
               const p = pct(sec.score, sec.total);
               const sc = SECTION_COLORS[key] || SECTION_COLORS.A;

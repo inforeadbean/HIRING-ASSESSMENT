@@ -78,15 +78,15 @@ export default function AdminLogin() {
       </div>
 
       {/* ── Right form panel ── */}
-      <div className="flex-1 flex items-center justify-center bg-gray-50 px-6 py-12">
+      <div className="flex-1 flex items-center justify-center bg-gray-50 px-4 sm:px-6 py-8 sm:py-12">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
-          <div className="lg:hidden flex justify-center mb-8">
+          <div className="lg:hidden flex justify-center mb-6 sm:mb-8">
             <RedBeanLogo size="lg" />
           </div>
 
           {/* Card */}
-          <div className="bg-white rounded-2xl shadow-[0_4px_32px_rgba(0,0,0,0.08)] border border-gray-100 p-8">
+          <div className="bg-white rounded-2xl shadow-[0_4px_32px_rgba(0,0,0,0.08)] border border-gray-100 p-5 sm:p-8">
             {/* Header */}
             <div className="mb-8">
               <div className="w-12 h-12 bg-gradient-to-br from-brand-600 to-brand-800 rounded-xl flex items-center justify-center mb-5 shadow-sm">

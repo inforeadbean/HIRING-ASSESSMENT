@@ -193,7 +193,7 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-5 py-6 space-y-5">
 
         {/* ── Stats row ── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {[
             {
               icon: <Users size={18} />,
@@ -232,14 +232,14 @@ export default function AdminDashboard() {
               text: "text-amber-600"
             },
           ].map((s, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${s.accent} flex items-center justify-center text-white shrink-0 shadow-sm`}>
+            <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${s.accent} flex items-center justify-center text-white shrink-0 shadow-sm`}>
                 {s.icon}
               </div>
               <div className="min-w-0">
-                <div className="text-2xl font-black text-gray-900 leading-none">{s.value}</div>
+                <div className="text-xl sm:text-2xl font-black text-gray-900 leading-none">{s.value}</div>
                 <div className="text-xs font-semibold text-gray-600 mt-1 truncate">{s.label}</div>
-                <div className="text-[10px] text-gray-400 mt-0.5">{s.sub}</div>
+                <div className="text-[10px] text-gray-400 mt-0.5 hidden sm:block">{s.sub}</div>
               </div>
             </div>
           ))}
@@ -349,28 +349,30 @@ export default function AdminDashboard() {
         </div>
 
         {/* ── Filter bar ── */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-          <form onSubmit={handleSearch} className="flex gap-3 flex-wrap">
-            <div className="flex-1 min-w-48 relative">
-              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 sm:p-4">
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <div className="flex-1 relative">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Search by name or email..."
-                className="input-field pl-10 py-2.5 text-sm"
+                placeholder="Search name or email..."
+                className="input-field pl-9 py-2 sm:py-2.5 text-sm w-full"
               />
             </div>
-            <select
-              value={gradeFilter}
-              onChange={e => { setGradeFilter(e.target.value); setPage(1); }}
-              className="input-field py-2.5 w-44 text-sm"
-            >
-              <option value="">All Grades</option>
-              {GRADE_ORDER.map(g => <option key={g} value={g}>{g}</option>)}
-            </select>
-            <button type="submit" className="btn-primary py-2.5 px-6 text-sm">
-              Search
-            </button>
+            <div className="flex gap-2">
+              <select
+                value={gradeFilter}
+                onChange={e => { setGradeFilter(e.target.value); setPage(1); }}
+                className="input-field py-2 sm:py-2.5 flex-1 sm:w-36 text-sm"
+              >
+                <option value="">All Grades</option>
+                {GRADE_ORDER.map(g => <option key={g} value={g}>{g}</option>)}
+              </select>
+              <button type="submit" className="btn-primary py-2 sm:py-2.5 px-4 sm:px-6 text-sm whitespace-nowrap">
+                Search
+              </button>
+            </div>
           </form>
         </div>
 
@@ -406,55 +408,62 @@ export default function AdminDashboard() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50/80 border-b border-gray-100">
-                    {["Candidate", "Score", "Grade", "Time Taken", "Submitted", "Actions"].map(h => (
-                      <th key={h} className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        {h}
+                    {[
+                      { label: "Candidate", cls: "" },
+                      { label: "Score", cls: "" },
+                      { label: "Grade", cls: "" },
+                      { label: "Time", cls: "hidden sm:table-cell" },
+                      { label: "Submitted", cls: "hidden lg:table-cell" },
+                      { label: "Actions", cls: "" },
+                    ].map(h => (
+                      <th key={h.label} className={`text-left px-3 sm:px-5 py-3 sm:py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider ${h.cls}`}>
+                        {h.label}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {submissions.map(s => (
-                    <tr key={s._id} className="hover:bg-gray-50/60 transition-colors group">
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center shrink-0">
-                            <span className="text-sm font-black text-brand-700">{s.candidate.name.charAt(0).toUpperCase()}</span>
+                    <tr key={s._id} className="hover:bg-gray-50/60 transition-colors">
+                      <td className="px-3 sm:px-5 py-3 sm:py-4">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center shrink-0">
+                            <span className="text-xs sm:text-sm font-black text-brand-700">{s.candidate.name.charAt(0).toUpperCase()}</span>
                           </div>
-                          <div>
-                            <div className="font-semibold text-gray-900 text-sm">{s.candidate.name}</div>
-                            <div className="text-xs text-gray-400 mt-0.5">{s.candidate.email}</div>
-                            {s.candidate.phone && <div className="text-xs text-gray-400">{s.candidate.phone}</div>}
+                          <div className="min-w-0">
+                            <div className="font-semibold text-gray-900 text-sm truncate max-w-[100px] sm:max-w-none">{s.candidate.name}</div>
+                            <div className="text-xs text-gray-400 mt-0.5 truncate max-w-[100px] sm:max-w-[180px]">{s.candidate.email}</div>
+                            {s.candidate.phone && <div className="text-xs text-gray-400 hidden sm:block">{s.candidate.phone}</div>}
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4">
-                        <div className="font-black text-gray-900 text-base">{s.percentage}%</div>
-                        <div className="text-xs text-gray-400 mt-0.5">{s.score}/{s.totalQuestions} correct</div>
+                      <td className="px-3 sm:px-5 py-3 sm:py-4 whitespace-nowrap">
+                        <div className="font-black text-gray-900 text-sm sm:text-base">{s.percentage}%</div>
+                        <div className="text-[10px] sm:text-xs text-gray-400">{s.score}/{s.totalQuestions}</div>
                       </td>
-                      <td className="px-5 py-4">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${GRADE_BADGE[s.grade] || ""}`}>
+                      <td className="px-3 sm:px-5 py-3 sm:py-4">
+                        <span className={`px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap ${GRADE_BADGE[s.grade] || ""}`}>
                           {s.grade}
                         </span>
                       </td>
-                      <td className="px-5 py-4 text-gray-500 text-xs">{formatTime(s.timeTaken)}</td>
-                      <td className="px-5 py-4 text-gray-500 text-xs whitespace-nowrap">{formatDate(s.submittedAt)}</td>
-                      <td className="px-5 py-4">
-                        <div className="flex gap-1.5">
+                      <td className="hidden sm:table-cell px-3 sm:px-5 py-3 sm:py-4 text-gray-500 text-xs whitespace-nowrap">{formatTime(s.timeTaken)}</td>
+                      <td className="hidden lg:table-cell px-3 sm:px-5 py-3 sm:py-4 text-gray-500 text-xs whitespace-nowrap">{formatDate(s.submittedAt)}</td>
+                      <td className="px-3 sm:px-5 py-3 sm:py-4">
+                        <div className="flex gap-1">
                           <button
                             onClick={() => navigate(`/admin/submissions/${s._id}`)}
-                            className="p-2 text-brand-700 hover:bg-brand-50 rounded-lg transition"
+                            className="p-1.5 sm:p-2 text-brand-700 hover:bg-brand-50 rounded-lg transition"
                             title="View Report"
                           >
-                            <Eye size={15} />
+                            <Eye size={14} />
                           </button>
                           {admin?.role === "superadmin" && (
                             <button
                               onClick={() => handleDelete(s._id, s.candidate.name)}
-                              className="p-2 text-red-400 hover:bg-red-50 rounded-lg transition"
+                              className="p-1.5 sm:p-2 text-red-400 hover:bg-red-50 rounded-lg transition"
                               title="Delete"
                             >
-                              <Trash2 size={15} />
+                              <Trash2 size={14} />
                             </button>
                           )}
                         </div>

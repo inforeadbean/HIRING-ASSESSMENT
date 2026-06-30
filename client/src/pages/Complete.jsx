@@ -31,36 +31,36 @@ export default function Complete() {
   const gc = GRADE_CONFIG[grade] || GRADE_CONFIG.Poor;
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${gc.bg} via-white py-10 px-4`}>
+    <div className={`min-h-screen bg-gradient-to-br ${gc.bg} via-white py-6 sm:py-10 px-4`}>
       <div className="max-w-xl mx-auto">
         {/* Logo */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-5 sm:mb-6">
           <RedBeanLogo size="md" />
         </div>
 
         {/* Result card */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          {/* Green success header */}
-          <div className="bg-gradient-to-r from-brand-700 to-brand-800 px-6 py-5 text-center">
-            <CheckCircle2 className="mx-auto text-white/90 mb-2" size={40} />
-            <h1 className="text-xl font-bold text-white">Assessment Submitted!</h1>
-            <p className="text-brand-200 text-sm mt-1">Your responses have been recorded</p>
+          {/* Success header */}
+          <div className="bg-gradient-to-r from-brand-700 to-brand-800 px-4 sm:px-6 py-5 text-center">
+            <CheckCircle2 className="mx-auto text-white/90 mb-2" size={36} />
+            <h1 className="text-lg sm:text-xl font-bold text-white">Assessment Submitted!</h1>
+            <p className="text-brand-200 text-xs sm:text-sm mt-1">Your responses have been recorded</p>
           </div>
 
           {/* Score section */}
-          <div className="px-6 py-6 text-center border-b border-gray-100">
-            <div className={`inline-flex flex-col items-center bg-gradient-to-br ${gc.bg} border ${gc.badge.split(" ").find(c => c.startsWith("border"))} rounded-2xl px-10 py-6`}>
-              <div className={`text-6xl font-black leading-none ${gc.score}`}>{percentage}%</div>
-              <div className="text-gray-500 text-sm mt-2">{score} / {totalQuestions} correct answers</div>
-              <div className={`mt-3 px-5 py-1.5 rounded-full text-sm font-bold border ${gc.badge}`}>{grade}</div>
+          <div className="px-4 sm:px-6 py-5 sm:py-6 text-center border-b border-gray-100">
+            <div className={`inline-flex flex-col items-center bg-gradient-to-br ${gc.bg} border ${gc.badge.split(" ").find(c => c.startsWith("border"))} rounded-2xl px-8 sm:px-10 py-5 sm:py-6`}>
+              <div className={`text-5xl sm:text-6xl font-black leading-none ${gc.score}`}>{percentage}%</div>
+              <div className="text-gray-500 text-xs sm:text-sm mt-2">{score} / {totalQuestions} correct</div>
+              <div className={`mt-3 px-4 sm:px-5 py-1.5 rounded-full text-xs sm:text-sm font-bold border ${gc.badge}`}>{grade}</div>
             </div>
           </div>
 
           {/* Section breakdown */}
           {sectionScores && (
-            <div className="px-6 py-5 border-b border-gray-100">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Section Breakdown</h3>
-              <div className="grid grid-cols-2 gap-3">
+            <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-100">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 sm:mb-4">Section Breakdown</h3>
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-2.5 sm:gap-3">
                 {SECTION_KEYS.filter(k => sectionScores[k]).map(key => {
                   const sec = sectionScores[key];
                   const pct = Math.round((sec.score / sec.total) * 100);
@@ -68,15 +68,15 @@ export default function Complete() {
                   const labelCls = pct >= 70 ? "text-green-600 bg-green-50" : "text-red-500 bg-red-50";
                   return (
                     <div key={key} className="bg-gray-50 rounded-xl p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold text-gray-600">Section {key}</span>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-bold text-gray-700">Sec {key}</span>
                         <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${labelCls}`}>{pct}%</span>
                       </div>
-                      <div className="text-xs text-gray-500 mb-2 truncate">{sec.label}</div>
+                      <div className="text-[11px] text-gray-400 mb-2 truncate leading-tight">{sec.label}</div>
                       <div className="w-full bg-gray-200 rounded-full h-1.5">
                         <div className={`h-1.5 rounded-full ${barCls}`} style={{ width: `${pct}%` }} />
                       </div>
-                      <div className="text-xs text-gray-400 mt-1">{sec.score}/{sec.total}</div>
+                      <div className="text-[10px] text-gray-400 mt-1">{sec.score}/{sec.total}</div>
                     </div>
                   );
                 })}
@@ -85,13 +85,13 @@ export default function Complete() {
           )}
 
           {/* Thank you */}
-          <div className="px-6 py-5 text-center">
+          <div className="px-4 sm:px-6 py-4 sm:py-5 text-center">
             <p className="text-gray-700 font-medium text-sm">Thank you for completing the assessment!</p>
             <p className="text-gray-400 text-xs mt-1.5">Our HR team will review your results and reach out to you shortly.</p>
           </div>
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-6">© Red Bean Hospitality · Food for Happiness</p>
+        <p className="text-center text-xs text-gray-400 mt-5 sm:mt-6">© Red Bean Hospitality · Food for Happiness</p>
       </div>
     </div>
   );

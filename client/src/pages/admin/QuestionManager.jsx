@@ -179,46 +179,50 @@ export default function QuestionManager() {
       <div className="max-w-7xl mx-auto px-5 py-6">
 
         {/* ── Filter bar ── */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-5">
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 sm:p-4 mb-4 sm:mb-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 flex-wrap">
+            <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider shrink-0">
               <Filter size={14} /> Filter By
             </div>
-            <select
-              value={filterPosition}
-              onChange={e => setFilterPosition(e.target.value)}
-              className="input-field py-2 text-sm w-48"
-            >
-              <option value="all">All Positions</option>
-              {dbPositions.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
-            <select
-              value={filterExperience}
-              onChange={e => setFilterExperience(e.target.value)}
-              className="input-field py-2 text-sm w-40"
-            >
-              <option value="all">All Experience</option>
-              {EXPERIENCE_LEVELS.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
-            </select>
-            <select
-              value={filterSection}
-              onChange={e => setFilterSection(e.target.value)}
-              className="input-field py-2 text-sm w-48"
-            >
-              <option value="">All Sections</option>
-              {SECTIONS.map(s => <option key={s.code} value={s.code}>Section {s.code} – {s.label}</option>)}
-            </select>
-            {hasFilters && (
-              <button
-                onClick={() => { setFilterPosition("all"); setFilterExperience("all"); setFilterSection(""); }}
-                className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 font-medium px-2 py-1 rounded-lg hover:bg-red-50 transition"
+            <div className="flex gap-2 flex-wrap">
+              <select
+                value={filterPosition}
+                onChange={e => setFilterPosition(e.target.value)}
+                className="input-field py-2 text-sm flex-1 sm:w-40 min-w-0"
               >
-                <X size={12} /> Clear filters
-              </button>
-            )}
-            <div className="ml-auto flex items-center gap-2">
-              <span className="text-xs font-black text-gray-900">{questions.length}</span>
-              <span className="text-xs text-gray-400">question{questions.length !== 1 ? "s" : ""}</span>
+                <option value="all">All Positions</option>
+                {dbPositions.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+              <select
+                value={filterExperience}
+                onChange={e => setFilterExperience(e.target.value)}
+                className="input-field py-2 text-sm flex-1 sm:w-36 min-w-0"
+              >
+                <option value="all">All Experience</option>
+                {EXPERIENCE_LEVELS.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
+              </select>
+              <select
+                value={filterSection}
+                onChange={e => setFilterSection(e.target.value)}
+                className="input-field py-2 text-sm flex-1 sm:w-44 min-w-0"
+              >
+                <option value="">All Sections</option>
+                {SECTIONS.map(s => <option key={s.code} value={s.code}>Sec {s.code} – {s.label}</option>)}
+              </select>
+            </div>
+            <div className="flex items-center gap-3 sm:ml-auto">
+              {hasFilters && (
+                <button
+                  onClick={() => { setFilterPosition("all"); setFilterExperience("all"); setFilterSection(""); }}
+                  className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 font-medium px-2 py-1 rounded-lg hover:bg-red-50 transition"
+                >
+                  <X size={12} /> Clear
+                </button>
+              )}
+              <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
+                <span className="text-xs font-black text-gray-900">{questions.length}</span>
+                <span className="text-xs text-gray-400">question{questions.length !== 1 ? "s" : ""}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -350,8 +354,8 @@ export default function QuestionManager() {
 
       {/* ── Add/Edit Modal ── */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-8">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center p-2 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-4 sm:my-8">
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 bg-gradient-to-br from-brand-600 to-brand-800 rounded-xl flex items-center justify-center">
@@ -367,7 +371,7 @@ export default function QuestionManager() {
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="px-6 py-5 space-y-5">
+            <form onSubmit={handleSave} className="px-4 sm:px-6 py-4 sm:py-5 space-y-4 sm:space-y-5">
 
               {/* Section selector */}
               <div>
