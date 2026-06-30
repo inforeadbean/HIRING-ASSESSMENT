@@ -59,35 +59,37 @@ export default function Home() {
           <div className="flex justify-center mb-5">
             <RedBeanLogo size="lg" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Hiring Assessment Portal</h1>
+          <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Hiring Assessment Portal</h1>
           <p className="text-gray-500 text-lg">Complete the assessment to move forward in the selection process</p>
-          <div className="w-16 h-1 bg-brand-700 rounded-full mx-auto mt-4" />
+          <div className="w-20 h-1 bg-gradient-to-r from-brand-600 to-red-400 rounded-full mx-auto mt-4" />
         </div>
 
         {/* Info cards */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           {[
-            { icon: <ClipboardList size={20} />, label: "4 Sections", sub: "MCQ Format" },
+            { icon: <ClipboardList size={20} />, label: "4 Sections", sub: "MCQ Format", iconBg: "bg-brand-50 text-brand-700" },
             {
               icon: <Clock size={20} />,
               label: timerEnabled ? `${timerMinutes} Minutes` : "No Time Limit",
-              sub: timerEnabled ? "Timed Assessment" : "Open Assessment"
+              sub: timerEnabled ? "Timed Assessment" : "Open Assessment",
+              iconBg: timerEnabled ? "bg-amber-50 text-amber-600" : "bg-green-50 text-green-600"
             },
-            { icon: <CheckCircle size={20} />, label: "40 Questions", sub: "One Correct Answer" }
+            { icon: <CheckCircle size={20} />, label: "40 Questions", sub: "One Correct Answer", iconBg: "bg-blue-50 text-blue-600" }
           ].map((item, i) => (
-            <div key={i} className="card text-center">
-              <div className="inline-flex items-center justify-center w-10 h-10 bg-brand-50 text-brand-700 rounded-xl mb-2">
+            <div key={i} className="card text-center hover:shadow-md transition-shadow">
+              <div className={`inline-flex items-center justify-center w-11 h-11 rounded-xl mb-3 ${item.iconBg}`}>
                 {item.icon}
               </div>
-              <div className="font-semibold text-gray-900">{item.label}</div>
-              <div className="text-sm text-gray-500">{item.sub}</div>
+              <div className="font-bold text-gray-900">{item.label}</div>
+              <div className="text-sm text-gray-500 mt-0.5">{item.sub}</div>
             </div>
           ))}
         </div>
 
         {/* Registration Form */}
-        <div className="card max-w-xl mx-auto">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Candidate Information</h2>
+        <div className="card max-w-xl mx-auto shadow-lg">
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Candidate Information</h2>
+          <p className="text-sm text-gray-400 mb-6">Fill in your details to begin the assessment</p>
           <form onSubmit={handleStart} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
