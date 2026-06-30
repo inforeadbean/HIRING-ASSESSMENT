@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/common/ProtectedRoute";
+import PWAInstallPrompt from "./components/common/PWAInstallPrompt";
 import Home from "./pages/Home";
 import Assessment from "./pages/Assessment";
 import Complete from "./pages/Complete";
@@ -17,15 +19,28 @@ export default function App() {
   useEffect(() => {
     // Ping the server every 10 minutes to prevent Render free tier from spinning down
     const ping = () => fetch(`${API_BASE}/health`).catch(() => {});
-    ping(); // immediate ping on app load
+    ping();
     const interval = setInterval(ping, 10 * 60 * 1000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    // Notify user when a new version of the app is available
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        toast("App updated! Reload for the latest version.", {
+          icon: "🔄",
+          duration: 5000,
+        });
+      });
+    }
   }, []);
 
   return (
     <AuthProvider>
       <BrowserRouter>
         <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
+        <PWAInstallPrompt />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/assessment" element={<Assessment />} />
