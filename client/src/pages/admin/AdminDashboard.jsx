@@ -40,7 +40,7 @@ export default function AdminDashboard() {
     try {
       const res = await adminAPI.getStats();
       setStats(res.data);
-    } catch { toast.error("Failed to load stats"); }
+    } catch { /* silent — server may be waking up */ }
   }, []);
 
   const fetchSubmissions = useCallback(async () => {
@@ -50,7 +50,7 @@ export default function AdminDashboard() {
       setSubmissions(res.data.submissions);
       setTotal(res.data.total);
       setPages(res.data.pages);
-    } catch { toast.error("Failed to load submissions"); }
+    } catch { /* silent — server may be waking up */ }
     finally { setLoading(false); }
   }, [page, search, gradeFilter]);
 
@@ -261,7 +261,7 @@ export default function AdminDashboard() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-100">
-                    {["Candidate", "Position", "Score", "Grade", "Time Taken", "Date", "Actions"].map(h => (
+                    {["Candidate", "Score", "Grade", "Time Taken", "Date", "Actions"].map(h => (
                       <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{h}</th>
                     ))}
                   </tr>
@@ -272,8 +272,8 @@ export default function AdminDashboard() {
                       <td className="px-4 py-3.5">
                         <div className="font-medium text-gray-900">{s.candidate.name}</div>
                         <div className="text-xs text-gray-400">{s.candidate.email}</div>
+                        {s.candidate.phone && <div className="text-xs text-gray-400">{s.candidate.phone}</div>}
                       </td>
-                      <td className="px-4 py-3.5 text-gray-600 text-xs">{s.candidate.position}</td>
                       <td className="px-4 py-3.5">
                         <div className="font-bold text-gray-900">{s.percentage}%</div>
                         <div className="text-xs text-gray-400">{s.score}/{s.totalQuestions}</div>

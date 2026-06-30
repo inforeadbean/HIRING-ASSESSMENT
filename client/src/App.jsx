@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
@@ -10,7 +11,17 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import SubmissionView from "./pages/admin/SubmissionView";
 import QuestionManager from "./pages/admin/QuestionManager";
 
+const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:5000/api");
+
 export default function App() {
+  useEffect(() => {
+    // Ping the server every 10 minutes to prevent Render free tier from spinning down
+    const ping = () => fetch(`${API_BASE}/health`).catch(() => {});
+    ping(); // immediate ping on app load
+    const interval = setInterval(ping, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <AuthProvider>
       <BrowserRouter>
